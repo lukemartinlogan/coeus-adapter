@@ -35,6 +35,27 @@ target_include_directories(adios2-pdf-calc PRIVATE
 install(TARGETS adios2-pdf-calc 
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+add_executable(hashing-comparison analysis/compare.cpp)
+
+# Link libraries to the executable
+target_link_libraries(hashing-comparison
+        adios2::adios2
+        hermes_engine
+        ${Hermes_LIBRARIES}
+        MPI::MPI_C
+        )
+
+# Include necessary directories for compilation
+target_include_directories(hashing-comparison PRIVATE
+        ${Hermes_INCLUDE_DIRS}
+        ${ADIOS2_INCLUDE_DIR}
+        )
+
+# Install the executable
+install(TARGETS hashing-comparison
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        )
+
 
 install(FILES "adios2.xml" "adios2-inline-plugin.xml" "adios2-fides-staging.xml"
                            "visit-bp4.session" "visit-bp4.session.gui" 

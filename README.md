@@ -74,9 +74,6 @@ To use the Adios2 derived variable feature, please switch to the derived_merged 
 ```
 4.  modify adios2 packages.py, and change the URL and branch. https://github.com/lizdulac/ADIOS2/tree/coeus_hash
 
-## Hermes Info log
-The Hermes info log is disabled by default. To enable the Hermes log, please set log_verbosity = 1 in hermes_run.
-
 
 
 ## manually install adios2 for derived variables
@@ -137,3 +134,10 @@ cmake ../ -D ADIOS2_USE_Kokkos=ON  -D CMAKE_INSTALL_PREFIX=/mnt/common/hxu40/ins
 make -j8
 make isntall
  ```
+
+## ADIOS2 hashing operation
+
+
+## Hermes Info log
+The Hermes info log is disabled by default. To enable the Hermes log, please set log_verbosity = 1 in hermes_run.
+
