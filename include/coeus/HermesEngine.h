@@ -112,7 +112,8 @@ class HermesEngine : public adios2::plugin::PluginEngineInterface {
 
   int currentStep = 0;
   int total_steps = -1;
-
+  int reader_get_time = 0;
+  int compare_time=0;
 //  std::shared_ptr<coeus::MPI> mpiComm;
   uint rank;
   int comm_size;
