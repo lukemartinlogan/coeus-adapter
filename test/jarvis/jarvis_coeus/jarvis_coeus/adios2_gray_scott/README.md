@@ -155,11 +155,11 @@ jarvis ppl run
 ```
 
 ```
-jarvis pkg config adios2_gray_scott out_file=/mnt/ssd/hxu40/out1.bp ppn=2 nprocs=16 steps=400
-jarvis pkg config adios2_gray_scott_2 out_file=/mnt/ssd/hxu40/out2.bp ppn=2 nprocs=16 steps=400
+jarvis pkg config adios2_gray_scott out_file=/mnt/ssd/hxu40/out1.bp ppn=16 nprocs=2 steps=400
+jarvis pkg config adios2_gray_scott_2 out_file=/mnt/ssd/hxu40/out2.bp ppn=16 nprocs=2 steps=400
 
-jarvis pkg config adios2_gray_scott out_file=/mnt/ssd/hxu40/out1.bp ppn=4 nprocs=16 steps=800
-jarvis pkg config adios2_gray_scott_2 out_file=/mnt/ssd/hxu40/out2.bp ppn=4 nprocs=16 steps=800
+jarvis pkg config adios2_gray_scott out_file=/mnt/ssd/hxu40/out1.bp ppn=16 nprocs=4 steps=800
+jarvis pkg config adios2_gray_scott_2 out_file=/mnt/ssd/hxu40/out2.bp ppn=16 nprocs=4 steps=800
 
 
 
