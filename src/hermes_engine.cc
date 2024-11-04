@@ -602,7 +602,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     for (auto count: variable.m_Count) {
         total_count *= count;
     }
-    int numberOfProcesses = 4;
+    int numberOfProcesses = 2;
     Hermes->bkt->Put(name, total_count * sizeof(T), values);
 
     T* values2 = new T[total_count];
