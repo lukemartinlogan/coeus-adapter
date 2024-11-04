@@ -148,15 +148,15 @@ export PATH=~/coeus/derived/coeus-adapter/build/bin/:$PATH
 export LD_LIBRARY_PATH=~/coeus/derived/coeus-adapter/build/bin/:$LD_LIBRARY_PATH
 jarvis pipeline env build
 jarvis pipeline append hermes_run --sleep=10 --provider=sockets
-jarvis pipeline append adios2_gray_scott engine=hermes_derived out_file=/mnt/ssd/hxu40/out1.bp bp_file_copy=1 ppn=8 nprocs=16 steps=12800
-jarvis pipeline append adios2_gray_scott_2 engine=hermes_derived out_file=/mnt/ssd/hxu40/out2.bp bp_file_copy=2 ppn=8 nprocs=16 steps=12800
+jarvis pipeline append adios2_gray_scott L=128 engine=hermes_derived out_file=/mnt/ssd/hxu40/out1.bp bp_file_copy=1 ppn=8 nprocs=16 steps=12800
+jarvis pipeline append adios2_gray_scott_2 L=128 engine=hermes_derived out_file=/mnt/ssd/hxu40/out2.bp bp_file_copy=2 ppn=8 nprocs=16 steps=12800
 jarvis ppl run
 
 ```
 
 ```
-jarvis pkg config adios2_gray_scott out_file=/mnt/ssd/hxu40/out1.bp ppn=16 nprocs=2 steps=400
-jarvis pkg config adios2_gray_scott_2 out_file=/mnt/ssd/hxu40/out2.bp ppn=16 nprocs=2 steps=400
+jarvis pkg config adios2_gray_scott out_file=/mnt/ssd/hxu40/out1.bp ppn=16 nprocs=2 steps=400 L=128
+jarvis pkg config adios2_gray_scott_2 out_file=/mnt/ssd/hxu40/out2.bp ppn=16 nprocs=2 steps=400 L=128
 
 jarvis pkg config adios2_gray_scott out_file=/mnt/ssd/hxu40/out1.bp ppn=16 nprocs=4 steps=800
 jarvis pkg config adios2_gray_scott_2 out_file=/mnt/ssd/hxu40/out2.bp ppn=16 nprocs=4 steps=800
