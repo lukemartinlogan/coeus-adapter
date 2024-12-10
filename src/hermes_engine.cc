@@ -194,7 +194,7 @@ void HermesEngine::Init_() {
  * */
 void HermesEngine::DoClose(const int transportIndex) {
   TRACE_FUNC("engine close");
-  std::cout << "rank: " << rank << "compute time: " << compare_time << "; read time: " << reader_get_time << std::endl;
+
   open = false;
 }
 
@@ -622,10 +622,10 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
             Hermes->GetBucket(previous_bucket_name);
             auto blob = Hermes->bkt->Get(name);
             memcpy(values2, blob.data(), blob.size());
-            auto reader_get_end_time = std::chrono::high_resolution_clock::now();
-            auto get_time_cost = std::chrono::duration_cast<std::chrono::milliseconds>(reader_get_end_time - reader_get_start_time );
-            reader_get_time = get_time_cost.count() + reader_get_time;
-            auto compare_get_start_time = std::chrono::high_resolution_clock::now();
+           // auto reader_get_end_time = std::chrono::high_resolution_clock::now();
+           // auto get_time_cost = std::chrono::duration_cast<std::chrono::milliseconds>(reader_get_end_time - reader_get_start_time );
+           // reader_get_time = get_time_cost.count() + reader_get_time;
+           // auto compare_get_start_time = std::chrono::high_resolution_clock::now();
             for (int i = 0; i < total_count; ++i) {
                 if (static_cast<int>(values[i]) - static_cast<int>(values2[i]) > 0.01) {
 
@@ -634,9 +634,9 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                     engine_logger->info("The difference happened at {}", std::ctime(&end_time_t));
                 }
             }
-            auto compare_get_end_time = std::chrono::high_resolution_clock::now();
-            get_time_cost = std::chrono::duration_cast<std::chrono::milliseconds>(compare_get_end_time - compare_get_start_time );
-            compare_time = get_time_cost.count() + compare_time;
+            //auto compare_get_end_time = std::chrono::high_resolution_clock::now();
+          //  get_time_cost = std::chrono::duration_cast<std::chrono::milliseconds>(compare_get_end_time - compare_get_start_time );
+           // compare_time = get_time_cost.count() + compare_time;
 
         }
     }
