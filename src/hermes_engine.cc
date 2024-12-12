@@ -118,7 +118,6 @@ void HermesEngine::Init_() {
   comm_size = m_Comm.Size();
   pid_t processId = getpid();
 
-  std::cout << "!!!!!! the process number is " << comm_size  << std::endl;
   //Identifier, should be the file, but we don't get it
   uid = this->m_IO.m_Name;
   std::cout << uid << std::endl;
@@ -603,8 +602,6 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     for (auto count: variable.m_Count) {
         total_count *= count;
     }
-    int numberOfProcesses = 4;
-
     Hermes->bkt->Put(name, total_count * sizeof(T), values);
 
     T* values2 = new T[total_count];
@@ -612,14 +609,11 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
     // switch the bucket
     int current_bucket = stoi(adiosOutput);
-
     if (current_bucket > 1) {
         std::string previous_bucket_name =
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
-                std::to_string(rank-numberOfProcesses);
-
-        if (db->FindVariable(currentStep, rank -numberOfProcesses, name,previous_bucket_name)) {
-
+                std::to_string(rank-comm_size);
+        if (db->FindVariable(currentStep, rank - comm_size, name,previous_bucket_name)) {
             auto reader_get_start_time = std::chrono::high_resolution_clock::now();
             Hermes->GetBucket(previous_bucket_name);
             auto blob = Hermes->bkt->Get(name);
