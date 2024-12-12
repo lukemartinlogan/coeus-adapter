@@ -118,6 +118,7 @@ void HermesEngine::Init_() {
   comm_size = m_Comm.Size();
   pid_t processId = getpid();
 
+  std::cout << "!!!!!! the process number is " << comm_size  << std::endl;
   //Identifier, should be the file, but we don't get it
   uid = this->m_IO.m_Name;
   std::cout << uid << std::endl;
@@ -603,6 +604,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
         total_count *= count;
     }
     int numberOfProcesses = 4;
+
     Hermes->bkt->Put(name, total_count * sizeof(T), values);
 
     T* values2 = new T[total_count];
