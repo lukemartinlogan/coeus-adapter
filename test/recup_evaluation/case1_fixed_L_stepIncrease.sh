@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Define variables
-L_values=(12800 6400 3200 1600 800 400 200)
-nprocs_values=(64 32 16 8 4 2 1)
-location="ssd"
-report="case1_ssd"
+L_values=(25600 12800 6400 3200 1600 800 400 200)
+nprocs_values=(128 64 32 16 8 4 2 1)
+location="hdd"
+report="case1_4_hdd"
 for i in ${!L_values[@]}; do
   L=${L_values[$i]}
   nprocs=${nprocs_values[$i]}
