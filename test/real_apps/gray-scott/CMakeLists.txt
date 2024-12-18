@@ -34,6 +34,24 @@ target_include_directories(adios2-pdf-calc PRIVATE
         )
 install(TARGETS adios2-pdf-calc 
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+add_executable(adios2-hashing analysis/hashing.cpp)
+
+# Link libraries to the executable
+target_link_libraries(adios2-hashing
+        adios2::adios2
+        MPI::MPI_C
+        )
+
+# Include necessary directories for compilation
+target_include_directories(adios2-hashing PRIVATE
+        ${CMAKE_SOURCE_DIR}/external_libraries/spdlog/include
+        ${ADIOS2_INCLUDE_DIR}
+        )
+
+# Install the executable
+install(TARGETS adios2-hashing
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        )
 
 add_executable(hashing-comparison analysis/compare.cpp)
 
