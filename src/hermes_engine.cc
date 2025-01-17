@@ -597,19 +597,17 @@ template <typename T>
 void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                                   T *values) {
     std::string name = variable.m_Name;
-
     int total_count = 1;
     for (auto count: variable.m_Count) {
         total_count *= count;
     }
     Hermes->bkt->Put(name, total_count * sizeof(T), values);
-
-    T* values2 = new T[total_count];
     DbOperation db_op = generateMetadata(variable, (float *) values, total_count);
     client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
     // switch the bucket
     int current_bucket = stoi(adiosOutput);
     if (current_bucket > 1) {
+        T* values2 = new T[total_count];
         std::string previous_bucket_name =
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
                 std::to_string(rank-comm_size);
@@ -618,21 +616,14 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
             Hermes->GetBucket(previous_bucket_name);
             auto blob = Hermes->bkt->Get(name);
             memcpy(values2, blob.data(), blob.size());
-           // auto reader_get_end_time = std::chrono::high_resolution_clock::now();
-           // auto get_time_cost = std::chrono::duration_cast<std::chrono::milliseconds>(reader_get_end_time - reader_get_start_time );
-           // reader_get_time = get_time_cost.count() + reader_get_time;
-           // auto compare_get_start_time = std::chrono::high_resolution_clock::now();
             for (int i = 0; i < total_count; ++i) {
                 if (static_cast<int>(values[i]) - static_cast<int>(values2[i]) > 0.01) {
-                 std::cout << "found it" << std::endl;
-                  //  auto app_end_time = std::chrono::system_clock::now();
-                 //   std::time_t end_time_t = std::chrono::system_clock::to_time_t(app_end_time);
-                  //  engine_logger->info("The difference happened at {}", std::ctime(&end_time_t));
+                    auto app_end_time = std::chrono::system_clock::now();
+                    std::time_t end_time_t = std::chrono::system_clock::to_time_t(app_end_time);
+                    engine_logger->info("The difference happened at {}", std::ctime(&end_time_t));
                 }
             }
-            //auto compare_get_end_time = std::chrono::high_resolution_clock::now();
-          //  get_time_cost = std::chrono::duration_cast<std::chrono::milliseconds>(compare_get_end_time - compare_get_start_time );
-           // compare_time = get_time_cost.count() + compare_time;
+
 
         }
     }
