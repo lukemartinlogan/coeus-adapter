@@ -141,3 +141,8 @@ make isntall
 ## Hermes Info log
 The Hermes info log is disabled by default. To enable the Hermes log, please set log_verbosity = 1 in hermes_run.
 
+## disbale adios2 metadata
+add this to the adios2.xml
+```
+<parameter key="StatsLevel" value="0"/>
+```
