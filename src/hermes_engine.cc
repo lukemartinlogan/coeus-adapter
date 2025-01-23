@@ -635,6 +635,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
         auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
         auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
         compare_time = compare_time + app_duration.count();
+        std::cout << "Compare_time: " << app_duration.count() << std::endl;
     }
 }
 
