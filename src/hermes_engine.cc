@@ -611,12 +611,12 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
         // time here
         auto app_start_time = std::chrono::high_resolution_clock::now();
         T* values2 = new T[total_count];
-        std::cout << "rank: " << rank << "number of process" << comm_size << std::endl;
+
         std::string previous_bucket_name =
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
-                std::to_string(rank-comm_size);
+                std::to_string(rank);
           std::cout << "previous_bucket_name: " << previous_bucket_name << std::endl;
-        if (db->FindVariable(currentStep, rank - comm_size, name,previous_bucket_name)) {
+        if (db->FindVariable(currentStep, rank, name,previous_bucket_name)) {
             std::cout << "find it " << std::endl;
             auto reader_get_start_time = std::chrono::high_resolution_clock::now();
             Hermes->GetBucket(previous_bucket_name);
