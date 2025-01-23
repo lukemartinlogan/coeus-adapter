@@ -624,7 +624,9 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
             Hermes->GetBucket(previous_bucket_name);
             auto blob = Hermes->bkt->Get(name);
             memcpy(values2, blob.data(), blob.size());
+
             for (int i = 0; i < total_count; ++i) {
+                std::cout <<"Value1: " << static_cast<int>(values[i]) << " Values2: " << static_cast<int>(values2[i]) << std::endl;
                 if (static_cast<int>(values[i]) - static_cast<int>(values2[i]) > 0.01) {
                     auto app_end_time = std::chrono::system_clock::now();
                     std::time_t end_time_t = std::chrono::system_clock::to_time_t(app_end_time);
