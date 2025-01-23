@@ -56,6 +56,7 @@ HermesEngine::HermesEngine(std::shared_ptr<coeus::IHermes> h,
  * Initialize the engine.
  * */
 void HermesEngine::Init_() {
+    auto app_start_time = std::chrono::high_resolution_clock::now();
   // initiate the trace manager
   auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
   console_sink->set_level(spdlog::level::trace);
@@ -184,8 +185,10 @@ void HermesEngine::Init_() {
   }
 
   open = true;
-
-
+        auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
+        auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
+        inintial_time = inintial_time + app_duration.count();
+        std::cout << "initial time is " << inintial_time << endl;
 
 }
 
@@ -194,7 +197,7 @@ void HermesEngine::Init_() {
  * */
 void HermesEngine::DoClose(const int transportIndex) {
   TRACE_FUNC("engine close");
-
+  std::cout << "compare time is : " << compare_time << std::endl;
   open = false;
 }
 
@@ -605,9 +608,14 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     DbOperation db_op = generateMetadata(variable, (float *) values, total_count);
     client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
     // switch the bucket
+
     int current_bucket = stoi(adiosOutput);
     if (current_bucket > 1) {
+        std::cout << "running comparion" << std::endl;
+        // time here
+        auto app_start_time = std::chrono::high_resolution_clock::now();
         T* values2 = new T[total_count];
+
         std::string previous_bucket_name =
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
                 std::to_string(rank-comm_size);
@@ -623,9 +631,10 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                     engine_logger->info("The difference happened at {}", std::ctime(&end_time_t));
                 }
             }
-
-
         }
+        auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
+        auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
+        compare_time = compare_time + app_duration.count();
     }
 }
 
