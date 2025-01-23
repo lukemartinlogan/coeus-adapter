@@ -188,7 +188,7 @@ void HermesEngine::Init_() {
         auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
         auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
         inintial_time = inintial_time + app_duration.count();
-        std::cout << "initial time is " << inintial_time << endl;
+        std::cout << "initial time is " << inintial_time << std::endl;
 
 }
 
