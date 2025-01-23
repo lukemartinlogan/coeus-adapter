@@ -117,6 +117,7 @@ void HermesEngine::Init_() {
 
 
   comm_size = m_Comm.Size();
+  std::cout << "@@@@@@@@@@@@@@@@@@@@::: "<< comm_size << std::endl;
   pid_t processId = getpid();
 
   //Identifier, should be the file, but we don't get it
@@ -610,7 +611,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
         // time here
         auto app_start_time = std::chrono::high_resolution_clock::now();
         T* values2 = new T[total_count];
-
+        std::cout << "rank: " << rank << "number of process" << comm_size << std::endl;
         std::string previous_bucket_name =
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
                 std::to_string(rank-comm_size);
