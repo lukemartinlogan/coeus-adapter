@@ -616,7 +616,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
                 std::to_string(rank);
           std::cout << "previous_bucket_name: " << previous_bucket_name << std::endl;
-        if (db->FindVariable(currentStep, rank, name,previous_bucket_name)) {
+
             std::cout << "find it " << std::endl;
             auto reader_get_start_time = std::chrono::high_resolution_clock::now();
             Hermes->GetBucket(previous_bucket_name);
@@ -631,7 +631,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                     engine_logger->info("The difference happened at {}", std::ctime(&end_time_t));
                 }
             }
-        }
+
         auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
         auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
         compare_time = compare_time + app_duration.count();
