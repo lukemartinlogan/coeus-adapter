@@ -47,7 +47,9 @@ HermesEngine::HermesEngine(std::shared_ptr<coeus::IHermes> h,
     : adios2::plugin::PluginEngineInterface(io, name, mode, comm.Duplicate()) {
   Hermes = h;
   Init_();
-  TRACE_FUNC("hermes engine construction");
+        std::cout << "Init_Start_time: "
+                  << std::put_time(std::localtime(&start_time_t), "%Y-%m-%d %H:%M:%S")
+                  << std::endl;
   engine_logger->info("rank {} with name {} and mode {}", rank, name, adios2::ToString(mode));
 
 }
@@ -240,6 +242,9 @@ bool HermesEngine::Demote(int step){
 adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
                                            const float timeoutSeconds) {
   TRACE_FUNC(std::to_string(currentStep));
+    std::cout << "Begin_step_Start_time: "
+              << std::put_time(std::localtime(&start_time_t), "%Y-%m-%d %H:%M:%S")
+              << std::endl;
     auto app_start_time = std::chrono::high_resolution_clock::now();
   IncrementCurrentStep();
 
