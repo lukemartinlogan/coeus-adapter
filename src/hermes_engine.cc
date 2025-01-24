@@ -189,12 +189,7 @@ void HermesEngine::Init_() {
         auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
         inintial_time = inintial_time + app_duration.count();
      std::cout << "initial_time: " << inintial_time << std::endl;
-        auto start_time_t = std::chrono::system_clock::to_time_t(
-                std::chrono::system_clock::now()
-        );
-        std::cout << "Init_Start_time: "
-                  << std::put_time(std::localtime(&start_time_t), "%Y-%m-%d %H:%M:%S")
-                  << std::endl;
+
 
 }
 
@@ -245,12 +240,7 @@ bool HermesEngine::Demote(int step){
 adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
                                            const float timeoutSeconds) {
   TRACE_FUNC(std::to_string(currentStep));
-    auto start_time_t = std::chrono::system_clock::to_time_t(
-            std::chrono::system_clock::now()
-    );
-    std::cout << "Begin_step_Start_time: "
-              << std::put_time(std::localtime(&start_time_t), "%Y-%m-%d %H:%M:%S")
-              << std::endl;
+
     auto app_start_time = std::chrono::high_resolution_clock::now();
   IncrementCurrentStep();
 
