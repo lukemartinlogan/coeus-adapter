@@ -189,7 +189,7 @@ void HermesEngine::Init_() {
         auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
         auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
         inintial_time = inintial_time + app_duration.count();
-        std::cout << "initial time is " << inintial_time << std::endl;
+
 
 }
 
@@ -198,7 +198,10 @@ void HermesEngine::Init_() {
  * */
 void HermesEngine::DoClose(const int transportIndex) {
   TRACE_FUNC("engine close");
-  std::cout << "compare time is : " << compare_time << std::endl;
+  std::cout << "compare_time is : " << compare_time << std::endl;
+  std::cout << "begin_step_time is: " << begin_step_time << std::endl;
+  std::cout << "compute_derived_time is: " << compute_derived_time << std::endl;
+  std::cout << "put_time is: " << put_time << std::endl;
   open = false;
 }
 
@@ -237,6 +240,7 @@ bool HermesEngine::Demote(int step){
 adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
                                            const float timeoutSeconds) {
   TRACE_FUNC(std::to_string(currentStep));
+    auto app_start_time = std::chrono::high_resolution_clock::now();
   IncrementCurrentStep();
 
   if (m_OpenMode == adios2::Mode::Read) {
@@ -264,6 +268,9 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
           Demote(currentStep - lookahead - i);
       }
   }
+    auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
+    auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
+    begin_step_time = begin_step_time + app_duration.count();
 // end derived part
   return adios2::StepStatus::OK;
 }
@@ -272,6 +279,8 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
 
 //derived part
 void HermesEngine::ComputeDerivedVariables() {
+
+        auto app_start_time = std::chrono::high_resolution_clock::now();
   auto const &m_VariablesDerived = m_IO.GetDerivedVariables();
   auto const &m_Variables = m_IO.GetVariables();
   // parse all derived variables
@@ -285,9 +294,9 @@ void HermesEngine::ComputeDerivedVariables() {
     auto derivedVar =
         dynamic_cast<adios2::core::VariableDerived *>((*it).second.get());
     std::vector<std::string> varList = derivedVar->VariableNameList();
-    for(auto i: varList) {
-        std::cout << "Compute Derived Variables: " << i << std::endl;
-    }
+    //for(auto i: varList) {
+       // std::cout << "Compute Derived Variables: " << i << std::endl;
+   // }
     // to create a mapping between variable name and the varInfo (dim and data
     // pointer)
       std::map<std::string, adios2::MinVarInfo> nameToVarInfo;
@@ -342,17 +351,22 @@ void HermesEngine::ComputeDerivedVariables() {
       free(std::get<0>(derivedBlock));
     }
   }
+        auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
+        auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
+
+        compute_derived_time = compute_derived_time + app_duration.count();
+
 }
 
 
 
 void HermesEngine::IncrementCurrentStep() {
-  TRACE_FUNC(std::to_string(currentStep));
+
   currentStep++;
 }
 
 size_t HermesEngine::CurrentStep() const {
-  TRACE_FUNC(std::to_string(currentStep));
+
   return currentStep;
 }
 
@@ -376,7 +390,7 @@ void HermesEngine::EndStep() {
 bool HermesEngine::VariableMinMax(const adios2::core::VariableBase &Var,
                                   const size_t Step,
                                   adios2::MinMaxStruct &MinMax) {
-  TRACE_FUNC(Var.m_Name);
+
   // We initialize the min and max values
   MinMax.Init(Var.m_Type);
 
@@ -544,6 +558,7 @@ template<typename T>
 void HermesEngine::DoPutSync_(const adios2::core::Variable<T> &variable,
                               const T *values) {
   TRACE_FUNC(variable.m_Name, adios2::ToString(variable.m_Count));
+    auto app_start_time = std::chrono::high_resolution_clock::now();
   std::string name = variable.m_Name;
   Hermes->bkt->Put(name, variable.SelectionSize() * sizeof(T), values);
 
@@ -567,8 +582,7 @@ void HermesEngine::DoPutSync_(const adios2::core::Variable<T> &variable,
 template<typename T>
 void HermesEngine::DoPutDeferred_(
     const adios2::core::Variable<T> &variable, const T *values) {
-
-  TRACE_FUNC(variable.m_Name, adios2::ToString(variable.m_Count));
+    auto app_start_time = std::chrono::high_resolution_clock::now();
   std::string name = variable.m_Name;
 
   Hermes->bkt->Put(name, variable.SelectionSize() * sizeof(T), values);
@@ -584,7 +598,9 @@ void HermesEngine::DoPutDeferred_(
   DbOperation db_op(currentStep, rank, std::move(vm), name, std::move(blobInfo));
        client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
 
-
+    auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
+    auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
+    put_time = put_time + app_duration.count();
 }
 
 
@@ -615,8 +631,6 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
         std::string previous_bucket_name =
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
                 std::to_string(rank);
-        std::cout << "@@@rank: " <<rank <<  std::endl;
-          std::cout << name <<  " previous_bucket_name: " << previous_bucket_name << std::endl;
         if (db->FindVariable(currentStep, rank, name,previous_bucket_name)) {
             std::cout << "find it " << std::endl;
             auto reader_get_start_time = std::chrono::high_resolution_clock::now();
@@ -625,7 +639,6 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
             memcpy(values2, blob.data(), blob.size());
 
             for (int i = 0; i < total_count; ++i) {
-           std::cout << "value1: " << static_cast<int>(values[i]) << ": value2: " << static_cast<int>(values2[i]) << std::endl;
                 if (static_cast<int>(values[i]) - static_cast<int>(values2[i]) > 0.01) {
                     auto app_end_time = std::chrono::system_clock::now();
                     std::time_t end_time_t = std::chrono::system_clock::to_time_t(app_end_time);
@@ -636,7 +649,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
         auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
         auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
         compare_time = compare_time + app_duration.count();
-        std::cout << "Compare_time: " << app_duration.count() << std::endl;
+
     }
 }
 
