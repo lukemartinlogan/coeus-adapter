@@ -271,8 +271,8 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
     }
     LoadMetadata();
   }
-    app_end_time = std::chrono::high_resolution_clock::now();
-    app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
+    auto app_end_time = std::chrono::high_resolution_clock::now();
+    auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
     flag5 = flag5 + app_duration.count();
     std::cout << "flag5:" << flag5 << ", time: " <<  app_duration.count() << std::endl;
 
