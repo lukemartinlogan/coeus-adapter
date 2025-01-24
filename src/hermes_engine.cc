@@ -49,6 +49,7 @@ HermesEngine::HermesEngine(std::shared_ptr<coeus::IHermes> h,
   Init_();
         auto start_time_t = std::chrono::system_clock::to_time_t(
                 std::chrono::system_clock::now()
+        );
         std::cout << "Init_Start_time: "
                   << std::put_time(std::localtime(&start_time_t), "%Y-%m-%d %H:%M:%S")
                   << std::endl;
@@ -245,6 +246,7 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
   TRACE_FUNC(std::to_string(currentStep));
     auto start_time_t = std::chrono::system_clock::to_time_t(
             std::chrono::system_clock::now()
+    );
     std::cout << "Begin_step_Start_time: "
               << std::put_time(std::localtime(&start_time_t), "%Y-%m-%d %H:%M:%S")
               << std::endl;
