@@ -47,6 +47,8 @@ HermesEngine::HermesEngine(std::shared_ptr<coeus::IHermes> h,
     : adios2::plugin::PluginEngineInterface(io, name, mode, comm.Duplicate()) {
   Hermes = h;
   Init_();
+        auto start_time_t = std::chrono::system_clock::to_time_t(
+                std::chrono::system_clock::now()
         std::cout << "Init_Start_time: "
                   << std::put_time(std::localtime(&start_time_t), "%Y-%m-%d %H:%M:%S")
                   << std::endl;
@@ -119,7 +121,6 @@ void HermesEngine::Init_() {
 
 
   comm_size = m_Comm.Size();
-  std::cout << "@@@@@@@@@@@@@@@@@@@@::: "<< comm_size << std::endl;
   pid_t processId = getpid();
 
   //Identifier, should be the file, but we don't get it
@@ -242,6 +243,8 @@ bool HermesEngine::Demote(int step){
 adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
                                            const float timeoutSeconds) {
   TRACE_FUNC(std::to_string(currentStep));
+    auto start_time_t = std::chrono::system_clock::to_time_t(
+            std::chrono::system_clock::now()
     std::cout << "Begin_step_Start_time: "
               << std::put_time(std::localtime(&start_time_t), "%Y-%m-%d %H:%M:%S")
               << std::endl;
