@@ -99,10 +99,8 @@ void HermesEngine::Init_() {
   logger.set_level(spdlog::level::debug);
   engine_logger = std::make_shared<spdlog::logger>(logger);
 
-        auto app_end_time = std::chrono::high_resolution_clock::now();
-        auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-        flag1 = flag1 + app_duration.count();
-        std::cout << "flag1:" << flag1 << ", time: " <<  app_duration.count() << std::endl;
+
+
 
         app_start_time = std::chrono::high_resolution_clock::now();
   // hermes setup
@@ -112,10 +110,7 @@ void HermesEngine::Init_() {
   }
   if (rank == 0) std::cout << "Connected to Hermes" << std::endl;
 
-         app_end_time = std::chrono::high_resolution_clock::now();
-         app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-        flag2 = flag2 + app_duration.count();
-        std::cout << "flag2:" << flag2 << ", time: " <<  app_duration.count() << std::endl;
+
         app_start_time = std::chrono::high_resolution_clock::now();
   // add rank with consensus
   rank_consensus.CreateRoot(DomainId::GetLocal(), "rankConsensus");
@@ -127,10 +122,7 @@ void HermesEngine::Init_() {
 
   comm_size = m_Comm.Size();
   pid_t processId = getpid();
-        app_end_time = std::chrono::high_resolution_clock::now();
-        app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-        flag3 = flag3 + app_duration.count();
-        std::cout << "flag3:" << flag3 << ", time: " <<  app_duration.count() << std::endl;
+
   //Identifier, should be the file, but we don't get it
   uid = this->m_IO.m_Name;
 
@@ -259,13 +251,18 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
                                            const float timeoutSeconds) {
   TRACE_FUNC(std::to_string(currentStep));
 
-    auto app_start_time = std::chrono::high_resolution_clock::now();
+    auto start_time_increment_step = std::chrono::high_resolution_clock::now();
   IncrementCurrentStep();
+   auto stop_time_increment_step = std::chrono::high_resolution_clock::now();
+    std::cout << "increment_time," << std::chrono::duration_cast<std::chrono::milliseconds>(start_time_increment_step - stop_time_increment_step).count() << std::endl;
 
+    auto start_time_ = std::chrono::high_resolution_clock::now();
   if (m_OpenMode == adios2::Mode::Read) {
     if (total_steps == -1)
+        auto start_time_get_total_steps = std::chrono::high_resolution_clock::now();
       total_steps = db->GetTotalSteps(uid);
-
+      auto stop_time_increment_step = std::chrono::high_resolution_clock::now();
+      std::cout << "get_total_steps," << std::chrono::duration_cast<std::chrono::milliseconds>(start_time_get_total_steps - stop_time_get_total_steps).count() << std::endl;
     if (currentStep > total_steps) {
       return adios2::StepStatus::EndOfStream;
     }
