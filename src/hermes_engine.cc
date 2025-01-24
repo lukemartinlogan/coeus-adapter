@@ -56,7 +56,7 @@ HermesEngine::HermesEngine(std::shared_ptr<coeus::IHermes> h,
  * Initialize the engine.
  * */
 void HermesEngine::Init_() {
-    auto app_start_time = std::chrono::high_resolution_clock::now();
+  //  auto app_start_time = std::chrono::high_resolution_clock::now();
   // initiate the trace manager
   auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
   console_sink->set_level(spdlog::level::trace);
@@ -185,10 +185,10 @@ void HermesEngine::Init_() {
   }
 
   open = true;
-        auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
-        auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-        inintial_time = inintial_time + app_duration.count();
-     std::cout << "initial_time: " << inintial_time << std::endl;
+    //    auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
+    //    auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
+     //   inintial_time = inintial_time + app_duration.count();
+   //  std::cout << "initial_time: " << inintial_time << std::endl;
 
 
 }
@@ -241,7 +241,7 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
                                            const float timeoutSeconds) {
   TRACE_FUNC(std::to_string(currentStep));
 
-    auto app_start_time = std::chrono::high_resolution_clock::now();
+   // auto app_start_time = std::chrono::high_resolution_clock::now();
   IncrementCurrentStep();
 
   if (m_OpenMode == adios2::Mode::Read) {
@@ -269,9 +269,9 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
           Demote(currentStep - lookahead - i);
       }
   }
-    auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
-    auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-    begin_step_time = begin_step_time + app_duration.count();
+   // auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
+  //  auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
+  //  begin_step_time = begin_step_time + app_duration.count();
 // end derived part
   return adios2::StepStatus::OK;
 }
@@ -372,7 +372,7 @@ size_t HermesEngine::CurrentStep() const {
 }
 
 void HermesEngine::EndStep() {
-  TRACE_FUNC(std::to_string(currentStep));
+    auto app_start_time = std::chrono::high_resolution_clock::now();
     ComputeDerivedVariables();
   if (m_OpenMode == adios2::Mode::Write) {
     if (rank % ppn == 0) {
@@ -381,8 +381,12 @@ void HermesEngine::EndStep() {
     }
   }
 
-  delete Hermes->bkt;
 
+
+  delete Hermes->bkt;
+    auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
+    auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
+    begin_step_time = begin_step_time + app_duration.count();
 }
 
 /**
