@@ -60,7 +60,7 @@ void HermesEngine::Init_() {
   // initiate the trace manager
    std::random_device rd;  // Obtain a random seed
     std::mt19937 gen(rd()); // Mersenne Twister generator
-    std::uniform_int_distribution<> dis(1, 100); // Range [1, 100]
+    std::uniform_int_distribution<> dis(1, 10000);
 
     // Generate a random number
     int randomNumber = dis(gen);
@@ -69,7 +69,7 @@ void HermesEngine::Init_() {
     std::string randomNumberStr = std::to_string(randomNumber);
 
     // Step 3: Add the random number to a base string
-    std::string baseString = "logs/engine_test ";
+    std::string baseString = "logs/engine_test_";
     std::string logname = baseString + randomNumberStr + ".txt";
 
   auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
