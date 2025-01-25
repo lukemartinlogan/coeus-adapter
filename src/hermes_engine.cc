@@ -112,7 +112,7 @@ void HermesEngine::Init_() {
   logger.set_level(spdlog::level::debug);
   engine_logger = std::make_shared<spdlog::logger>(logger);
  auto stop_time_log = std::chrono::high_resolution_clock::now();
-  std::cout << "log_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time__log - start_time__log).count() << std::endl;
+  std::cout << "log_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_log - start_time_log).count() << std::endl;
 
  auto start_time_hermes_setup = std::chrono::high_resolution_clock::now();
   // hermes setup
@@ -272,10 +272,7 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
     auto start_time_metadata = std::chrono::high_resolution_clock::now();
   if (m_OpenMode == adios2::Mode::Read) {
     if (total_steps == -1)
-        auto start_time_get_total_steps = std::chrono::high_resolution_clock::now();
       total_steps = db->GetTotalSteps(uid);
-      auto stop_time_increment_step = std::chrono::high_resolution_clock::now();
-      std::cout << "get_total_steps," << std::chrono::duration_cast<std::chrono::milliseconds>(start_time_get_total_steps - stop_time_get_total_steps).count() << std::endl;
     if (currentStep > total_steps) {
       return adios2::StepStatus::EndOfStream;
     }
