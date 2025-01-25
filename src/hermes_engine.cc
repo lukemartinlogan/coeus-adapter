@@ -405,21 +405,27 @@ size_t HermesEngine::CurrentStep() const {
 }
 
 void HermesEngine::EndStep() {
-    auto app_start_time = std::chrono::high_resolution_clock::now();
+     auto start_time_derived_variable = std::chrono::high_resolution_clock::now();
     ComputeDerivedVariables();
+    auto stop_time_derived_variable = std::chrono::high_resolution_clock::now();
+  std::cout << "derived_variable_setup_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_derived_variable - start_time_derived_variable).count() << std::endl;
+   
+    auto start_time_endstep_dpOP = std::chrono::high_resolution_clock::now();
   if (m_OpenMode == adios2::Mode::Write) {
     if (rank % ppn == 0) {
       DbOperation db_op(uid, currentStep);
       client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
     }
   }
+  auto stop_time_endstep_dpOP = std::chrono::high_resolution_clock::now();
+  std::cout << "endstep_dpOP_setup_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_endstep_dpOP - start_time_endstep_dpOP).count() << std::endl;
+   
 
-
-
+  auto start_time_delete_bkt = std::chrono::high_resolution_clock::now();
   delete Hermes->bkt;
-    auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
-    auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-    begin_step_time = begin_step_time + app_duration.count();
+    auto stop_time_delete_bkt = std::chrono::high_resolution_clock::now();
+  std::cout << "delete_bkt_setup_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_delete_bkt - start_time_delete_bkt).count() << std::endl;
+   
 }
 
 /**
