@@ -311,16 +311,23 @@ auto start_time_derived_part = std::chrono::high_resolution_clock::now();
 
 //derived part
 void HermesEngine::ComputeDerivedVariables() {
-
+    int time1 = 0;
+    int time2 = 0;
+    int time3 = 0;
+    int time 4 = 0;
     auto start_time_ComputeDerivedVariables_1 = std::chrono::high_resolution_clock::now();
 
-  auto const &m_VariablesDerived = m_IO.GetDerivedVariables();
+        auto const &m_VariablesDerived = m_IO.GetDerivedVariables();
   auto const &m_Variables = m_IO.GetVariables();
-  // parse all derived variables
+        auto stop_time_ComputeDerivedVariables_1 = std::chrono::high_resolution_clock::now();
+        std::cout << "ComputeDerivedVariables_1," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_1 - start_time_ComputeDerivedVariables_1).count() << std::endl;
+
+        // parse all derived variables
   if(rank == 0) {
       std::cout << " Parsing " << m_VariablesDerived.size() << " derived variables"
                 << std::endl;
   }
+
   for (auto it = m_VariablesDerived.begin(); it != m_VariablesDerived.end();
        it++) {
     // identify the variables used in the derived variable
@@ -328,16 +335,14 @@ void HermesEngine::ComputeDerivedVariables() {
         dynamic_cast<adios2::core::VariableDerived *>((*it).second.get());
     std::vector<std::string> varList = derivedVar->VariableNameList();
 
-      auto stop_time_ComputeDerivedVariables_1 = std::chrono::high_resolution_clock::now();
-      std::cout << "ComputeDerivedVariables_1," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_1 - start_time_ComputeDerivedVariables_1).count() << std::endl;
 
-      auto start_time_ComputeDerivedVariables_2 = std::chrono::high_resolution_clock::now();
     //for(auto i: varList) {
        // std::cout << "Compute Derived Variables: " << i << std::endl;
    // }
     // to create a mapping between variable name and the varInfo (dim and data
     // pointer)
       std::map<std::string, adios2::MinVarInfo> nameToVarInfo;
+      auto start_time_ComputeDerivedVariables_2 = std::chrono::high_resolution_clock::now();
     for (auto varName : varList) {
       auto itVariable = m_Variables.find(varName);
           if (itVariable == m_Variables.end())
@@ -366,11 +371,10 @@ void HermesEngine::ComputeDerivedVariables() {
       }
     }
       auto stop_time_ComputeDerivedVariables_2 = std::chrono::high_resolution_clock::now();
-      std::cout << "ComputeDerivedVariables_2," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_2 - start_time_ComputeDerivedVariables_2).count() << std::endl;
-
-      auto start_time_ComputeDerivedVariables_3 = std::chrono::high_resolution_clock::now();
+      time1 = time1 + std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_2 - start_time_ComputeDerivedVariables_2).count();
     // compute the values for the derived variables that are not type
     // ExpressionString
+      auto start_time_ComputeDerivedVariables_3 = std::chrono::high_resolution_clock::now();
     std::vector<std::tuple<void *, adios2::Dims, adios2::Dims>>
         DerivedBlockData;
     if (derivedVar->GetDerivedType() !=
@@ -381,7 +385,9 @@ void HermesEngine::ComputeDerivedVariables() {
         }
       DerivedBlockData = derivedVar->ApplyExpression(NameToMVI);
     }
-
+      auto stop_time_ComputeDerivedVariables_3 = std::chrono::high_resolution_clock::now();
+      time2 = time2 + std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_3 - start_time_ComputeDerivedVariables_3).count();
+      auto start_time_ComputeDerivedVariables_4 = std::chrono::high_resolution_clock::now();
     for (auto derivedBlock : DerivedBlockData) {
 #define DEFINE_VARIABLE_PUT(T)       \
   if (adios2::helper::GetDataType<T>() == derivedVar->m_Type) { \
@@ -392,9 +398,13 @@ void HermesEngine::ComputeDerivedVariables() {
 #undef DEFINE_VARIABLE_PUT
       free(std::get<0>(derivedBlock));
     }
+      auto stop_time_ComputeDerivedVariables_4 = std::chrono::high_resolution_clock::now();
+      time3 = time3 + std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_4 - start_time_ComputeDerivedVariables_4).count();
+
   }
-        auto stop_time_ComputeDerivedVariables_3 = std::chrono::high_resolution_clock::now();
-        std::cout << "ComputeDerivedVariables_3," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_3 - start_time_ComputeDerivedVariables_3).count() << std::endl;
+   std::cout <<  "ComputeDerivedVariables_2," << time1 << std::endl;
+   std::cout <<  "ComputeDerivedVariables_3," << time2 << std::endl;
+        std::cout <<  "ComputeDerivedVariables_4," << time3 << std::endl;
 
 
     }
