@@ -31,7 +31,6 @@ HermesEngine::HermesEngine(adios2::core::IO &io,//NOLINT
   Hermes = std::make_shared<coeus::Hermes>();
   //  mpiComm = std::make_shared<coeus::MPI>(comm.Duplicate());
   Init_();
-  TRACE_FUNC("Init HermesEngine");
   engine_logger->info("rank {} with name {} and mode {}", rank, name, adios2::ToString(mode));
 
 
@@ -47,7 +46,6 @@ HermesEngine::HermesEngine(std::shared_ptr<coeus::IHermes> h,
     : adios2::plugin::PluginEngineInterface(io, name, mode, comm.Duplicate()) {
   Hermes = h;
   Init_();
-
   engine_logger->info("rank {} with name {} and mode {}", rank, name, adios2::ToString(mode));
 
 }
@@ -56,15 +54,13 @@ HermesEngine::HermesEngine(std::shared_ptr<coeus::IHermes> h,
  * Initialize the engine.
  * */
 void HermesEngine::Init_() {
-   auto start_time_log = std::chrono::high_resolution_clock::now();
+
   // initiate the trace manager
    std::random_device rd;  // Obtain a random seed
     std::mt19937 gen(rd()); // Mersenne Twister generator
     std::uniform_int_distribution<> dis(1, 10000);
-
     // Generate a random number
     int randomNumber = dis(gen);
-
     // Step 2: Convert the random number to a string
     std::string randomNumberStr = std::to_string(randomNumber);
 
@@ -111,21 +107,15 @@ void HermesEngine::Init_() {
   spdlog::logger logger("debug_logger", {console_sink, file_sink});
   logger.set_level(spdlog::level::debug);
   engine_logger = std::make_shared<spdlog::logger>(logger);
- auto stop_time_log = std::chrono::high_resolution_clock::now();
-  std::cout << "log_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_log - start_time_log).count() << std::endl;
 
- auto start_time_hermes_setup = std::chrono::high_resolution_clock::now();
+
   // hermes setup
   if (!Hermes->connect()) {
     engine_logger->warn("Could not connect to Hermes", rank);
     throw coeus::common::ErrorException(HERMES_CONNECT_FAILED);
   }
   if (rank == 0) std::cout << "Connected to Hermes" << std::endl;
- auto stop_time_hermes_setup = std::chrono::high_resolution_clock::now();
-  std::cout << "hermes_setup_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_hermes_setup - start_time_hermes_setup).count() << std::endl;
 
-
-    auto start_time_rank_consensus = std::chrono::high_resolution_clock::now();    
   // add rank with consensus
   rank_consensus.CreateRoot(DomainId::GetLocal(), "rankConsensus");
   rank = rank_consensus.GetRankRoot(DomainId::GetLocal());
@@ -138,11 +128,6 @@ void HermesEngine::Init_() {
 
   //Identifier, should be the file, but we don't get it
   uid = this->m_IO.m_Name;
-auto stop_time_rank_consensus = std::chrono::high_resolution_clock::now();
-  std::cout << "rank_consensus_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_rank_consensus - start_time_rank_consensus).count() << std::endl;
-
-
-  auto start_time_parameter_time = std::chrono::high_resolution_clock::now();
 
   // Configuration Setup through the Adios xml configuration
   auto params = m_IO.m_Parameters;
@@ -206,8 +191,6 @@ auto stop_time_rank_consensus = std::chrono::high_resolution_clock::now();
       adiosOutput = params["adiosOutput"];
   }
   open = true;
-    auto stop_time_parameter_time = std::chrono::high_resolution_clock::now();
-  std::cout << "parameter_time_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_parameter_time - start_time_parameter_time).count() << std::endl;
 
 }
 
@@ -247,30 +230,17 @@ bool HermesEngine::Promote(int step){
 bool HermesEngine::Demote(int step){
     bool success = true;
     if (step > 0) {
-        auto start_time_demote_getAllBlobs = std::chrono::high_resolution_clock::now();
         auto var_locations = db->getAllBlobs(step, rank);
-        auto stop_time_demote_getAllBlobs = std::chrono::high_resolution_clock::now();
-        std::cout << "demote_getAllBlobs_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_demote_getAllBlobs - start_time_demote_getAllBlobs).count() << std::endl;
-        auto start_time_hermes_demote = std::chrono::high_resolution_clock::now();
         for (const auto &location: var_locations) {
             success &= Hermes->Demote(location.bucket_name, location.blob_name);
         }
-        auto stop_time_hermes_demote = std::chrono::high_resolution_clock::now();
-        std::cout << "hermes_demote_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_hermes_demote - start_time_hermes_demote).count() << std::endl;
-    }
+}
     return success;
 }
 
 adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
                                            const float timeoutSeconds) {
-  
-
-  auto start_time_increment_step = std::chrono::high_resolution_clock::now();
   IncrementCurrentStep();
-   auto stop_time_increment_step = std::chrono::high_resolution_clock::now();
-    std::cout << "increment_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_increment_step - start_time_increment_step).count() << std::endl;
-
-    auto start_time_metadata = std::chrono::high_resolution_clock::now();
   if (m_OpenMode == adios2::Mode::Read) {
     if (total_steps == -1)
       total_steps = db->GetTotalSteps(uid);
@@ -279,17 +249,8 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
     }
     LoadMetadata();
   }
-  auto stop_time_metadata = std::chrono::high_resolution_clock::now();
-    std::cout << "metadata_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_metadata - start_time_metadata).count() << std::endl;
-
-    auto start_time_get_bucket = std::chrono::high_resolution_clock::now();
-
     std::string bucket_name =  adiosOutput + "_step_" + std::to_string(currentStep) + "_rank" + std::to_string(rank);
-
     Hermes->GetBucket(bucket_name);
-  auto stop_time_get_bucket = std::chrono::high_resolution_clock::now();
-    std::cout << "get_bucket_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_get_bucket - start_time_get_bucket).count() << std::endl;
-auto start_time_derived_part = std::chrono::high_resolution_clock::now();
 // derived part
   if(m_OpenMode == adios2::Mode::Read){
       for(int i = 0; i < num_layers; i++) {
@@ -301,9 +262,6 @@ auto start_time_derived_part = std::chrono::high_resolution_clock::now();
           Demote(currentStep - lookahead - i);
       }
   }
-    auto stop_time_derived_part = std::chrono::high_resolution_clock::now();
-    std::cout << "derived_part_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_derived_part - start_time_derived_part).count() << std::endl;
-
   return adios2::StepStatus::OK;
 }
 
@@ -311,17 +269,8 @@ auto start_time_derived_part = std::chrono::high_resolution_clock::now();
 
 //derived part
 void HermesEngine::ComputeDerivedVariables() {
-    int time1 = 0;
-    int time2 = 0;
-    int time3 = 0;
-
-    auto start_time_ComputeDerivedVariables_1 = std::chrono::high_resolution_clock::now();
-
-        auto const &m_VariablesDerived = m_IO.GetDerivedVariables();
+    auto const &m_VariablesDerived = m_IO.GetDerivedVariables();
   auto const &m_Variables = m_IO.GetVariables();
-        auto stop_time_ComputeDerivedVariables_1 = std::chrono::high_resolution_clock::now();
-        std::cout << "ComputeDerivedVariables_1," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_1 - start_time_ComputeDerivedVariables_1).count() << std::endl;
-
         // parse all derived variables
   if(rank == 0) {
       std::cout << " Parsing " << m_VariablesDerived.size() << " derived variables"
@@ -342,7 +291,6 @@ void HermesEngine::ComputeDerivedVariables() {
     // to create a mapping between variable name and the varInfo (dim and data
     // pointer)
       std::map<std::string, adios2::MinVarInfo> nameToVarInfo;
-      auto start_time_ComputeDerivedVariables_2 = std::chrono::high_resolution_clock::now();
     for (auto varName : varList) {
       auto itVariable = m_Variables.find(varName);
           if (itVariable == m_Variables.end())
@@ -370,11 +318,7 @@ void HermesEngine::ComputeDerivedVariables() {
         entry->second.BlocksInfo.push_back(blk);
       }
     }
-      auto stop_time_ComputeDerivedVariables_2 = std::chrono::high_resolution_clock::now();
-      time1 = time1 + std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_2 - start_time_ComputeDerivedVariables_2).count();
-    // compute the values for the derived variables that are not type
     // ExpressionString
-      auto start_time_ComputeDerivedVariables_3 = std::chrono::high_resolution_clock::now();
     std::vector<std::tuple<void *, adios2::Dims, adios2::Dims>>
         DerivedBlockData;
     if (derivedVar->GetDerivedType() !=
@@ -385,9 +329,6 @@ void HermesEngine::ComputeDerivedVariables() {
         }
       DerivedBlockData = derivedVar->ApplyExpression(NameToMVI);
     }
-      auto stop_time_ComputeDerivedVariables_3 = std::chrono::high_resolution_clock::now();
-      time2 = time2 + std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_3 - start_time_ComputeDerivedVariables_3).count();
-      auto start_time_ComputeDerivedVariables_4 = std::chrono::high_resolution_clock::now();
     for (auto derivedBlock : DerivedBlockData) {
 #define DEFINE_VARIABLE_PUT(T)       \
   if (adios2::helper::GetDataType<T>() == derivedVar->m_Type) { \
@@ -398,51 +339,33 @@ void HermesEngine::ComputeDerivedVariables() {
 #undef DEFINE_VARIABLE_PUT
       free(std::get<0>(derivedBlock));
     }
-      auto stop_time_ComputeDerivedVariables_4 = std::chrono::high_resolution_clock::now();
-      time3 = time3 + std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_4 - start_time_ComputeDerivedVariables_4).count();
-
   }
-   std::cout <<  "ComputeDerivedVariables_2," << time1 << std::endl;
-   std::cout <<  "ComputeDerivedVariables_3," << time2 << std::endl;
-        std::cout <<  "ComputeDerivedVariables_4," << time3 << std::endl;
-
 
     }
 
 
 
 void HermesEngine::IncrementCurrentStep() {
-
   currentStep++;
 }
 
 size_t HermesEngine::CurrentStep() const {
-
   return currentStep;
 }
 
 void HermesEngine::EndStep() {
-     auto start_time_derived_variable = std::chrono::high_resolution_clock::now();
+
     ComputeDerivedVariables();
-    auto stop_time_derived_variable = std::chrono::high_resolution_clock::now();
-  std::cout << "derived_variable_setup_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_derived_variable - start_time_derived_variable).count() << std::endl;
-   
-    auto start_time_endstep_dpOP = std::chrono::high_resolution_clock::now();
+
+
   if (m_OpenMode == adios2::Mode::Write) {
     if (rank % ppn == 0) {
       DbOperation db_op(uid, currentStep);
       client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
     }
   }
-  auto stop_time_endstep_dpOP = std::chrono::high_resolution_clock::now();
-  std::cout << "endstep_dpOP_setup_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_endstep_dpOP - start_time_endstep_dpOP).count() << std::endl;
-   
-
-  auto start_time_delete_bkt = std::chrono::high_resolution_clock::now();
   delete Hermes->bkt;
-    auto stop_time_delete_bkt = std::chrono::high_resolution_clock::now();
-  std::cout << "delete_bkt_setup_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_delete_bkt - start_time_delete_bkt).count() << std::endl;
-   
+
 }
 
 /**
@@ -619,7 +542,7 @@ template<typename T>
 void HermesEngine::DoPutSync_(const adios2::core::Variable<T> &variable,
                               const T *values) {
   TRACE_FUNC(variable.m_Name, adios2::ToString(variable.m_Count));
-    auto app_start_time = std::chrono::high_resolution_clock::now();
+
   std::string name = variable.m_Name;
   Hermes->bkt->Put(name, variable.SelectionSize() * sizeof(T), values);
 
@@ -643,7 +566,7 @@ void HermesEngine::DoPutSync_(const adios2::core::Variable<T> &variable,
 template<typename T>
 void HermesEngine::DoPutDeferred_(
     const adios2::core::Variable<T> &variable, const T *values) {
-    auto app_start_time = std::chrono::high_resolution_clock::now();
+
   std::string name = variable.m_Name;
 
   Hermes->bkt->Put(name, variable.SelectionSize() * sizeof(T), values);
@@ -659,12 +582,8 @@ void HermesEngine::DoPutDeferred_(
   DbOperation db_op(currentStep, rank, std::move(vm), name, std::move(blobInfo));
        client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
 
-    auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
-    auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-    put_time = put_time + app_duration.count();
+
 }
-
-
 
 
 
@@ -681,20 +600,15 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     DbOperation db_op = generateMetadata(variable, (float *) values, total_count);
     client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
     // switch the bucket
-
     int current_bucket = stoi(adiosOutput);
     if (current_bucket > 2) {
-
         // time here
-        auto app_start_time = std::chrono::high_resolution_clock::now();
         T* values2 = new T[total_count];
-
         std::string previous_bucket_name =
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
                 std::to_string(rank);
         if (db->FindVariable(currentStep, rank, name,previous_bucket_name)) {
-            std::cout << "find it " << std::endl;
-            auto reader_get_start_time = std::chrono::high_resolution_clock::now();
+
             Hermes->GetBucket(previous_bucket_name);
             auto blob = Hermes->bkt->Get(name);
             memcpy(values2, blob.data(), blob.size());
@@ -707,9 +621,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                 }
             }
         }
-        auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
-        auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-        compare_time = compare_time + app_duration.count();
+
 
     }
 }
