@@ -205,12 +205,7 @@ auto stop_time_rank_consensus = std::chrono::high_resolution_clock::now();
   if(params.find("adiosOutput") != params.end()) {
       adiosOutput = params["adiosOutput"];
   }
-
   open = true;
-    //    auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
-    //    auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-     //   inintial_time = inintial_time + app_duration.count();
-   //  std::cout << "initial_time: " << inintial_time << std::endl;
     auto stop_time_parameter_time = std::chrono::high_resolution_clock::now();
   std::cout << "parameter_time_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_parameter_time - start_time_parameter_time).count() << std::endl;
 
@@ -252,10 +247,16 @@ bool HermesEngine::Promote(int step){
 bool HermesEngine::Demote(int step){
     bool success = true;
     if (step > 0) {
+        auto start_time_demote_getAllBlobs = std::chrono::high_resolution_clock::now();
         auto var_locations = db->getAllBlobs(step, rank);
+        auto stop_time_demote_getAllBlobs = std::chrono::high_resolution_clock::now();
+        std::cout << "demote_getAllBlobs_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_demote_getAllBlobs - start_time_demote_getAllBlobs).count() << std::endl;
+        auto start_time_hermes_demote = std::chrono::high_resolution_clock::now();
         for (const auto &location: var_locations) {
             success &= Hermes->Demote(location.bucket_name, location.blob_name);
         }
+        auto stop_time_hermes_demote = std::chrono::high_resolution_clock::now();
+        std::cout << "hermes_demote_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_hermes_demote - start_time_hermes_demote).count() << std::endl;
     }
     return success;
 }
@@ -302,10 +303,7 @@ auto start_time_derived_part = std::chrono::high_resolution_clock::now();
   }
     auto stop_time_derived_part = std::chrono::high_resolution_clock::now();
     std::cout << "derived_part_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_derived_part - start_time_derived_part).count() << std::endl;
-   // auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
-  //  auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-  //  begin_step_time = begin_step_time + app_duration.count();
-// end derived part
+
   return adios2::StepStatus::OK;
 }
 
@@ -314,7 +312,8 @@ auto start_time_derived_part = std::chrono::high_resolution_clock::now();
 //derived part
 void HermesEngine::ComputeDerivedVariables() {
 
-        auto app_start_time = std::chrono::high_resolution_clock::now();
+    auto start_time_ComputeDerivedVariables_1 = std::chrono::high_resolution_clock::now();
+
   auto const &m_VariablesDerived = m_IO.GetDerivedVariables();
   auto const &m_Variables = m_IO.GetVariables();
   // parse all derived variables
@@ -328,6 +327,11 @@ void HermesEngine::ComputeDerivedVariables() {
     auto derivedVar =
         dynamic_cast<adios2::core::VariableDerived *>((*it).second.get());
     std::vector<std::string> varList = derivedVar->VariableNameList();
+
+      auto stop_time_ComputeDerivedVariables_1 = std::chrono::high_resolution_clock::now();
+      std::cout << "ComputeDerivedVariables_1," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_1 - start_time_ComputeDerivedVariables_1).count() << std::endl;
+
+      auto start_time_ComputeDerivedVariables_2 = std::chrono::high_resolution_clock::now();
     //for(auto i: varList) {
        // std::cout << "Compute Derived Variables: " << i << std::endl;
    // }
@@ -345,8 +349,11 @@ void HermesEngine::ComputeDerivedVariables() {
       adios2::MinBlockInfo blk({0, 0, itVariable->second.get()->m_Start.data(),
                                 itVariable->second.get()->m_Count.data(),
                                 adios2::MinMaxStruct(), blob.data()});
+        auto stop_time_ComputeDerivedVariables_2 = std::chrono::high_resolution_clock::now();
+        std::cout << "ComputeDerivedVariables_2," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_2 - start_time_ComputeDerivedVariables_2).count() << std::endl;
 
-      // if this is the first block for the variable
+        auto start_time_ComputeDerivedVariables_3 = std::chrono::high_resolution_clock::now();
+        // if this is the first block for the variable
       auto entry = nameToVarInfo.find(varName);
       if (entry == nameToVarInfo.end()) {
         // create an mvi structure and add the new block to it
@@ -385,12 +392,11 @@ void HermesEngine::ComputeDerivedVariables() {
       free(std::get<0>(derivedBlock));
     }
   }
-        auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
-        auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
+        auto stop_time_ComputeDerivedVariables_3 = std::chrono::high_resolution_clock::now();
+        std::cout << "ComputeDerivedVariables_3," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_3 - start_time_ComputeDerivedVariables_3).count() << std::endl;
 
-        compute_derived_time = compute_derived_time + app_duration.count();
 
-}
+    }
 
 
 
