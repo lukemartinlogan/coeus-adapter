@@ -683,7 +683,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     // switch the bucket
 
     int current_bucket = stoi(adiosOutput);
-    if (current_bucket > 3) {
+    if (current_bucket > 2) {
 
         // time here
         auto app_start_time = std::chrono::high_resolution_clock::now();
