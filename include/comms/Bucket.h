@@ -23,9 +23,7 @@ class Bucket : public IBucket {
   hapi::Bucket bkt;
 
   Bucket(const std::string &bucket_name, coeus::IHermes *h) {
-
     name = bucket_name;
-    TRACE_FUNC(name);
     bkt = h->hermes->GetBucket(bucket_name);
   }
 
@@ -38,7 +36,6 @@ class Bucket : public IBucket {
 //  }
 
   void Put(const std::string &blob_name, size_t blob_size, const void* values) override {
-    TRACE_FUNC(blob_name);
     hapi::Context ctx;
     hermes::Blob blob(blob_size);
     hermes::BlobId blob_id;
@@ -55,7 +52,6 @@ class Bucket : public IBucket {
 //      bkt.AsyncPut(blob_name, blob, ctx);
 //  };
   hermes::Blob Get(const std::string &blob_name) override {
-    TRACE_FUNC(blob_name);
     hapi::Context ctx;
     hermes::Blob blob;
     bkt.Get(blob_name, blob, ctx);
@@ -63,7 +59,6 @@ class Bucket : public IBucket {
   };
 
   hermes::Blob Get(hermes::BlobId blob_id) override {
-    TRACE_FUNC(blob_id.node_id_);
     hapi::Context ctx;
     hermes::Blob blob;
     bkt.Get(blob_id, blob, ctx);
@@ -71,17 +66,14 @@ class Bucket : public IBucket {
   };
 
   std::vector<hermes::BlobId> GetContainedBlobIds() override {
-      TRACE_FUNC();
     return bkt.GetContainedBlobIds();
   }
 
   hermes::BlobId GetBlobId(const std::string &blob_name) override {
-      TRACE_FUNC();
     return bkt.GetBlobId(blob_name);
   }
 
   std::string GetBlobName(const hermes::BlobId &blob_id) override {
-      TRACE_FUNC();
     return bkt.GetBlobName(blob_id);
   }
 };
