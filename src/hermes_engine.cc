@@ -349,10 +349,8 @@ void HermesEngine::ComputeDerivedVariables() {
       adios2::MinBlockInfo blk({0, 0, itVariable->second.get()->m_Start.data(),
                                 itVariable->second.get()->m_Count.data(),
                                 adios2::MinMaxStruct(), blob.data()});
-        auto stop_time_ComputeDerivedVariables_2 = std::chrono::high_resolution_clock::now();
-        std::cout << "ComputeDerivedVariables_2," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_2 - start_time_ComputeDerivedVariables_2).count() << std::endl;
 
-        auto start_time_ComputeDerivedVariables_3 = std::chrono::high_resolution_clock::now();
+
         // if this is the first block for the variable
       auto entry = nameToVarInfo.find(varName);
       if (entry == nameToVarInfo.end()) {
@@ -367,7 +365,10 @@ void HermesEngine::ComputeDerivedVariables() {
         entry->second.BlocksInfo.push_back(blk);
       }
     }
+      auto stop_time_ComputeDerivedVariables_2 = std::chrono::high_resolution_clock::now();
+      std::cout << "ComputeDerivedVariables_2," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ComputeDerivedVariables_2 - start_time_ComputeDerivedVariables_2).count() << std::endl;
 
+      auto start_time_ComputeDerivedVariables_3 = std::chrono::high_resolution_clock::now();
     // compute the values for the derived variables that are not type
     // ExpressionString
     std::vector<std::tuple<void *, adios2::Dims, adios2::Dims>>
