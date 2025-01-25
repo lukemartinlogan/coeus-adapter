@@ -56,8 +56,21 @@ HermesEngine::HermesEngine(std::shared_ptr<coeus::IHermes> h,
  * Initialize the engine.
  * */
 void HermesEngine::Init_() {
-   auto app_start_time = std::chrono::high_resolution_clock::now();
+   auto start_time_log = std::chrono::high_resolution_clock::now();
   // initiate the trace manager
+   std::random_device rd;  // Obtain a random seed
+    std::mt19937 gen(rd()); // Mersenne Twister generator
+    std::uniform_int_distribution<> dis(1, 100); // Range [1, 100]
+
+    // Generate a random number
+    int randomNumber = dis(gen);
+
+    // Step 2: Convert the random number to a string
+    std::string randomNumberStr = std::to_string(randomNumber);
+
+    // Step 3: Add the random number to a base string
+    std::string baseString = "logs/engine_test ";
+    std::string logname = baseString + randomNumberStr + ".txt";
 
   auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
   console_sink->set_level(spdlog::level::trace);
@@ -65,11 +78,11 @@ void HermesEngine::Init_() {
 
   // File log
   auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-      "logs/engine_test.txt", true);
+      logname, true);
   file_sink->set_level(spdlog::level::trace);
   file_sink->set_pattern("%^[Coeus engine] [%!:%# @ %s] [%l] %$ %v");
-
-
+ 
+  
   // File log for metadata collection
   #ifdef Meta_enabled
   auto file_sink2 = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
@@ -98,20 +111,21 @@ void HermesEngine::Init_() {
   spdlog::logger logger("debug_logger", {console_sink, file_sink});
   logger.set_level(spdlog::level::debug);
   engine_logger = std::make_shared<spdlog::logger>(logger);
+ auto stop_time_log = std::chrono::high_resolution_clock::now();
+  std::cout << "log_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time__log - start_time__log).count() << std::endl;
 
-
-
-
-        app_start_time = std::chrono::high_resolution_clock::now();
+ auto start_time_hermes_setup = std::chrono::high_resolution_clock::now();
   // hermes setup
   if (!Hermes->connect()) {
     engine_logger->warn("Could not connect to Hermes", rank);
     throw coeus::common::ErrorException(HERMES_CONNECT_FAILED);
   }
   if (rank == 0) std::cout << "Connected to Hermes" << std::endl;
+ auto stop_time_hermes_setup = std::chrono::high_resolution_clock::now();
+  std::cout << "hermes_setup_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_hermes_setup - start_time_hermes_setup).count() << std::endl;
 
 
-        app_start_time = std::chrono::high_resolution_clock::now();
+    auto start_time_rank_consensus = std::chrono::high_resolution_clock::now();    
   // add rank with consensus
   rank_consensus.CreateRoot(DomainId::GetLocal(), "rankConsensus");
   rank = rank_consensus.GetRankRoot(DomainId::GetLocal());
@@ -119,15 +133,16 @@ void HermesEngine::Init_() {
   char buffer[bufferSize];         // Create a buffer to hold the hostname
   // Get the hostname
 
-
   comm_size = m_Comm.Size();
   pid_t processId = getpid();
 
   //Identifier, should be the file, but we don't get it
   uid = this->m_IO.m_Name;
+auto stop_time_rank_consensus = std::chrono::high_resolution_clock::now();
+  std::cout << "rank_consensus_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_rank_consensus - start_time_rank_consensus).count() << std::endl;
 
 
-        app_start_time = std::chrono::high_resolution_clock::now();
+  auto start_time_parameter_time = std::chrono::high_resolution_clock::now();
 
   // Configuration Setup through the Adios xml configuration
   auto params = m_IO.m_Parameters;
@@ -196,10 +211,8 @@ void HermesEngine::Init_() {
     //    auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
      //   inintial_time = inintial_time + app_duration.count();
    //  std::cout << "initial_time: " << inintial_time << std::endl;
-        app_end_time = std::chrono::high_resolution_clock::now();
-        app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-        flag4 = flag4 + app_duration.count();
-        std::cout << "flag4:" << flag4 << ", time: " <<  app_duration.count() << std::endl;
+    auto stop_time_parameter_time = std::chrono::high_resolution_clock::now();
+  std::cout << "parameter_time_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_parameter_time - start_time_parameter_time).count() << std::endl;
 
 }
 
@@ -249,14 +262,14 @@ bool HermesEngine::Demote(int step){
 
 adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
                                            const float timeoutSeconds) {
-  TRACE_FUNC(std::to_string(currentStep));
+  
 
-    auto start_time_increment_step = std::chrono::high_resolution_clock::now();
+  auto start_time_increment_step = std::chrono::high_resolution_clock::now();
   IncrementCurrentStep();
    auto stop_time_increment_step = std::chrono::high_resolution_clock::now();
-    std::cout << "increment_time," << std::chrono::duration_cast<std::chrono::milliseconds>(start_time_increment_step - stop_time_increment_step).count() << std::endl;
+    std::cout << "increment_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_increment_step - start_time_increment_step).count() << std::endl;
 
-    auto start_time_ = std::chrono::high_resolution_clock::now();
+    auto start_time_metadata = std::chrono::high_resolution_clock::now();
   if (m_OpenMode == adios2::Mode::Read) {
     if (total_steps == -1)
         auto start_time_get_total_steps = std::chrono::high_resolution_clock::now();
@@ -268,16 +281,17 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
     }
     LoadMetadata();
   }
-    auto app_end_time = std::chrono::high_resolution_clock::now();
-    auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-    flag5 = flag5 + app_duration.count();
-    std::cout << "flag5:" << flag5 << ", time: " <<  app_duration.count() << std::endl;
+  auto stop_time_metadata = std::chrono::high_resolution_clock::now();
+    std::cout << "metadata_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_metadata - start_time_metadata).count() << std::endl;
 
-    app_start_time = std::chrono::high_resolution_clock::now();
+    auto start_time_get_bucket = std::chrono::high_resolution_clock::now();
+
     std::string bucket_name =  adiosOutput + "_step_" + std::to_string(currentStep) + "_rank" + std::to_string(rank);
 
     Hermes->GetBucket(bucket_name);
-
+  auto stop_time_get_bucket = std::chrono::high_resolution_clock::now();
+    std::cout << "get_bucket_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_get_bucket - start_time_get_bucket).count() << std::endl;
+auto start_time_derived_part = std::chrono::high_resolution_clock::now();
 // derived part
   if(m_OpenMode == adios2::Mode::Read){
       for(int i = 0; i < num_layers; i++) {
@@ -289,10 +303,8 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
           Demote(currentStep - lookahead - i);
       }
   }
-    app_end_time = std::chrono::high_resolution_clock::now();
-    app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-    flag5 = flag5 + app_duration.count();
-    std::cout << "flag6:" << flag6 << ", time: " <<  app_duration.count() << std::endl;
+    auto stop_time_derived_part = std::chrono::high_resolution_clock::now();
+    std::cout << "derived_part_time," << std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_derived_part - start_time_derived_part).count() << std::endl;
    // auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
   //  auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
   //  begin_step_time = begin_step_time + app_duration.count();
