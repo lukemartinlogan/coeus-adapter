@@ -314,7 +314,7 @@ void HermesEngine::ComputeDerivedVariables() {
     int time1 = 0;
     int time2 = 0;
     int time3 = 0;
-    int time 4 = 0;
+
     auto start_time_ComputeDerivedVariables_1 = std::chrono::high_resolution_clock::now();
 
         auto const &m_VariablesDerived = m_IO.GetDerivedVariables();
