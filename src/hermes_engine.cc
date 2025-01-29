@@ -199,10 +199,7 @@ void HermesEngine::Init_() {
  * */
 void HermesEngine::DoClose(const int transportIndex) {
   TRACE_FUNC("engine close");
-  std::cout << "compare_time is : " << compare_time << std::endl;
-  std::cout << "begin_step_time is: " << begin_step_time << std::endl;
-  std::cout << "compute_derived_time is: " << compute_derived_time << std::endl;
-  std::cout << "put_time is: " << put_time << std::endl;
+
   open = false;
 }
 
