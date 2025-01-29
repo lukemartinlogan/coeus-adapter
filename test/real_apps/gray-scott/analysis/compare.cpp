@@ -85,19 +85,7 @@ int main(int argc, char *argv[])
     in_filename = argv[1];
     out_filename = argv[2];
 
-    if (argc >= 4)
-    {
-        int value = std::stoi(argv[3]);
 
-    }
-
-    if (argc >= 5)
-    {
-        std::string value = argv[4];
-        std::transform(value.begin(), value.end(), value.begin(), ::tolower);
-        if (value == "yes")
-            write_inputvars = true;
-    }
     std::size_t u_global_size, v_global_size;
     std::size_t u_local_size, v_local_size;
     bool firstStep = true;

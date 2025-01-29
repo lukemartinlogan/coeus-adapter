@@ -55,30 +55,11 @@ class HashingCompare(Application):
                 'default': None,
             },
             {
-                'name': 'nbins',
-                'msg': 'Number of bins used in the post processing (??)',
-                'type': int,
-                'default': 100,
-            },
-            {
-                'name': 'write_inputvars',
-                'msg': 'Should the read variables we written to the output file',
-                'choices': ['yes', 'no'],
-                'type': str,
-                'default': "no",
-            },
-            {
                 'name': 'engine',
                 'msg': 'Engine to be used',
                 'choices': ['bp5', 'hermes'],
                 'type': str,
                 'default': "bp5",
-            },
-            {
-                'name': 'db_path',
-                'msg': 'Path where the DB will be stored',
-                'type': str,
-                'default': 'benchmark_metadata.db',
             },
         ]
     # jarvis pkg config adios2_gray_scott_post ppn=20 full_run=true engine=hermes db_path=/mnt/nvme/jcernudagarcia/metadata.db in_filename=gs.bp out_filename=post.bp nprocs=1
@@ -99,20 +80,13 @@ class HashingCompare(Application):
                                           env=self.env))
 
         output_dir = os.path.dirname(self.config['out_filename'])
-        db_dir = os.path.dirname(self.config['db_path'])
+
         Mkdir([output_dir, db_dir], PsshExecInfo(hostfile=self.jarvis.hostfile,
                                        env=self.env))
 
         if self.config['engine'].lower() == 'bp5':
             self.copy_template_file(f'{self.pkg_dir}/config/adios2.xml',
                                 self.adios2_xml_path)
-        elif self.config['engine'].lower() == 'hermes':
-            self.copy_template_file(f'{self.pkg_dir}/config/hermes.xml',
-                                    self.adios2_xml_path)
-            self.copy_template_file(f'{self.pkg_dir}/config/var.yaml',
-                                    self.var_json_path)
-            self.copy_template_file(f'{self.pkg_dir}/config/operator.yaml',
-                                    self.operator_json_path)
         else:
             raise Exception('Engine not defined')
 
@@ -126,12 +100,10 @@ class HashingCompare(Application):
 
         in_file = self.config['in_filename']
         out_file = self.config['out_filename']
-        nbins = self.config['nbins']
-        write_inputbars = self.config['write_inputvars']
 
         cwd = os.path.dirname(self.adios2_xml_path)
         # print(self.env['HERMES_CLIENT_CONF'])
-        Exec(f'hashing-comparison {in_file} {out_file} {nbins} {write_inputbars}',
+        Exec(f'hashing-comparison {in_file} {out_file} ',
              MpiExecInfo(nprocs=self.config['nprocs'],
                          ppn=self.config['ppn'],
                          hostfile=self.jarvis.hostfile,

@@ -63,14 +63,6 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &comm_size);
 
-    if (argc < 3)
-    {
-        std::cout << "Not enough arguments\n";
-        if (rank == 0)
-            printUsage();
-        MPI_Finalize();
-        return 0;
-    }
     std::string in_filename;
     std::string out_filename;
     bool write_inputvars = true;
