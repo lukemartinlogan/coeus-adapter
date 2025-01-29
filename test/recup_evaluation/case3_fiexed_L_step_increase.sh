@@ -10,11 +10,15 @@ for i in ${!L_values[@]}; do
   nprocs=${nprocs_values[$i]}
   jarvis cd gray_scott_hermes
   mkdir -p ~/${report}/${nprocs}process
-  jarvis pkg config adios2_gray_scott L=512 steps=$L out_file=/mnt/${location}/hxu40/ofs-mount/case3/${nprocs}process/out1.bp nprocs=${nprocs} ppn=20  checkpoint_output=/mnt/${location}/hxu40/ofs-mount/case3/ckpt.bp db_path=/mnt/${location}/hxu40/ofs-mount/case3/benchmark_metadata.db
-  jarvis pkg config adios2_gray_scott_2 L=512 steps=$L out_file=/mnt/${location}/hxu40/ofs-mount/case3/${nprocs}process/out2.bp nprocs=${nprocs} ppn=20 checkpoint_output=/mnt/${location}/hxu40/ofs-mount/case3/ckpt.bp db_path=/mnt/${location}/hxu40/ofs-mount/case3/benchmark_metadata.db
+  jarvis pkg config adios2_gray_scott L=512 steps=$L out_file=/mnt/${location}/hxu40/ofs-mount/case3/${nprocs}process/out1.bp nprocs=${nprocs} ppn=20  checkpoint_output=/mnt/${location}/hxu40/ofs-mount/case3/ckpt.bp db_path=/mnt/nvme/hxu40/metadata.db
+  jarvis pkg config adios2_gray_scott_2 L=512 steps=$L out_file=/mnt/${location}/hxu40/ofs-mount/case3/${nprocs}process/out2.bp nprocs=${nprocs} ppn=20 checkpoint_output=/mnt/${location}/hxu40/ofs-mount/case3/ckpt.bp db_path=/mnt/nvme/hxu40/metadata.db
+   jarvis pkg config adios2_gray_scott_3 L=512 steps=$L out_file=/mnt/${location}/hxu40/ofs-mount/case3/${nprocs}process/out3.bp nprocs=${nprocs} ppn=20 checkpoint_output=/mnt/${location}/hxu40/ofs-mount/case3/ckpt.bp db_path=/mnt/nvme/hxu40/metadata.db
   jarvis ppl run > ~/${report}/${nprocs}process/result.txt
     jarvis ppl clean
     jarvis ppl kill
     jarvis ppl update
-
+  jarvis ppl run > ~/${report}/${nprocs}process/result.txt
+    jarvis ppl clean
+    jarvis ppl kill
+    jarvis ppl update
 done

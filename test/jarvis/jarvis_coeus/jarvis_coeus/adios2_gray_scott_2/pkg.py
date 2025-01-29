@@ -1,16 +1,14 @@
 """
-This module provides classes and methods to launch the Gray Scott application.
-Gray Scott is a 3D 7-point stencil code for modeling the diffusion of two
-substances.
+This module provides classes and methods to launch the Adios2GrayScott2 application.
+Adios2GrayScott2 is ....
 """
 from jarvis_cd.basic.pkg import Application
 from jarvis_util import *
-import pathlib
 
 
-class Adios2GrayScott(Application):
+class Adios2GrayScott2(Application):
     """
-    This class provides methods to launch the GrayScott application.
+    This class provides methods to launch the Adios2GrayScott2 application.
     """
     def _init(self):
         """
@@ -20,7 +18,6 @@ class Adios2GrayScott(Application):
         self.settings_json_path = f'{self.shared_dir}/settings-files.json'
         self.var_json_path = f'{self.shared_dir}/var.json'
         self.operator_json_path = f'{self.shared_dir}/operator.json'
-
     def _configure_menu(self):
         """
         Create a CLI menu for the configurator method.
@@ -181,7 +178,6 @@ class Adios2GrayScott(Application):
                 'type': str,
                 'default': None,
             },
-
         ]
 
     # jarvis pkg config adios2_gray_scott ppn=20 full_run=true engine=hermes db_path=/mnt/nvme/jcernudagarcia/metadata.db out_file=gs.bp nprocs=1

@@ -187,8 +187,8 @@ void HermesEngine::Init_() {
   } else {
     throw std::invalid_argument("db_file not found in parameters");
   }
-  if(params.find("adiosOutput") != params.end()) {
-      adiosOutput = params["adiosOutput"];
+  if(params.find("execution_order") != params.end()) {
+      adiosOutput = params["execution_order"];
   }
   open = true;
 
@@ -601,7 +601,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
     // switch the bucket
     int current_bucket = stoi(adiosOutput);
-    if (current_bucket > 2) {
+    if (current_bucket > 1) {
         // time here
         T* values2 = new T[total_count];
         std::string previous_bucket_name =
