@@ -58,6 +58,19 @@ make -j8
 make isntall
  ```
 
+4. install coeus-adapter
+```
+git clone -b derived_merged https://github.com/grc-iit/coeus-adapter.git
+spack load hermes
+make sure adios2 in the path
+module load openmpi
+cd coeus-adapter
+mkdir build
+cd build
+cmake ../
+make -j8
+```
+
 ## ADIOS2 hashing operation
 
 ## Run the evaluation scripts.
