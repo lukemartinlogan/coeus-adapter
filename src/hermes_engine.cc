@@ -254,11 +254,11 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
           Promote(currentStep + lookahead + i);
       }
   }
-  if(m_OpenMode == adios2::Mode::Write){
-      for(int i = 0; i < num_layers; i++) {
-          Demote(currentStep - lookahead - i);
-      }
-  }
+//  if(m_OpenMode == adios2::Mode::Write){
+//      for(int i = 0; i < num_layers; i++) {
+//          Demote(currentStep - lookahead - i);
+//      }
+//  }
   return adios2::StepStatus::OK;
 }
 
