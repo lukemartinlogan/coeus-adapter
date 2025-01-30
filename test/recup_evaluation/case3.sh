@@ -17,8 +17,5 @@ for i in ${!L_values[@]}; do
   jarvis ppl clean
   jarvis ppl kill
   jarvis ppl update
-  jarvis ppl run >  ~/${report}/${nprocs}process/result2.txt
-  jarvis ppl clean
-    jarvis ppl kill
-    jarvis ppl update
+
 done

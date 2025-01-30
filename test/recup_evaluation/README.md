@@ -109,6 +109,11 @@ output: "${SHARED_DIR}/output_multi"
 ```
 
 ## shell scripts
+please use case1.sh and case2.sh, case3.sh for evaluation in this folder<br>
+before use the scripts, please make sure that the output location ```in_filename, out_file``` are set properly <br>
+and also be careful for the ``` location="hdd" ```, this means the test is in the HDD, you can also switch to
+ssd.
+
 ```
 #!/bin/bash
 
