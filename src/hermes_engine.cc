@@ -466,7 +466,7 @@ void HermesEngine::ElementMinMax(adios2::MinMaxStruct &MinMax, void *element) {
 }
 
 void HermesEngine::LoadMetadata() {
-  TRACE_FUNC(rank);
+
   auto metadata_vector = db->GetAllVariableMetadata(currentStep, rank);
   for (auto &variableMetadata : metadata_vector) {
     DefineVariable(variableMetadata);
@@ -598,7 +598,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
     // switch the bucket
     int current_bucket = stoi(adiosOutput);
-    if (current_bucket > 1) {
+    if (current_bucket > 2) {
         // time here
         T* values2 = new T[total_count];
         std::string previous_bucket_name =
