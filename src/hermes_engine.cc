@@ -249,11 +249,11 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
     std::string bucket_name =  adiosOutput + "_step_" + std::to_string(currentStep) + "_rank" + std::to_string(rank);
     Hermes->GetBucket(bucket_name);
 // derived part
-  if(m_OpenMode == adios2::Mode::Read){
-      for(int i = 0; i < num_layers; i++) {
-          Promote(currentStep + lookahead + i);
-      }
-  }
+//  if(m_OpenMode == adios2::Mode::Read){
+//      for(int i = 0; i < num_layers; i++) {
+//          Promote(currentStep + lookahead + i);
+//      }
+//  }
 //  if(m_OpenMode == adios2::Mode::Write){
 //      for(int i = 0; i < num_layers; i++) {
 //          Demote(currentStep - lookahead - i);
@@ -353,14 +353,12 @@ size_t HermesEngine::CurrentStep() const {
 void HermesEngine::EndStep() {
 
     ComputeDerivedVariables();
-
-
-  if (m_OpenMode == adios2::Mode::Write) {
-    if (rank % ppn == 0) {
-      DbOperation db_op(uid, currentStep);
-      client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
-    }
-  }
+//  if (m_OpenMode == adios2::Mode::Write) {
+//    if (rank % ppn == 0) {
+//      DbOperation db_op(uid, currentStep);
+//      client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
+//    }
+//  }
   delete Hermes->bkt;
 
 }
