@@ -84,7 +84,7 @@ class HashingCompare(Application):
             self.config['out_filename'] = os.path.join(adios_dir, 'data/post.bp')
             Mkdir(adios_dir, PsshExecInfo(hostfile=self.jarvis.hostfile,
                                           env=self.env))
-
+        db_dir = os.path.dirname(self.config['db_path'])
         output_dir = os.path.dirname(self.config['out_filename'])
 
         Mkdir([output_dir, db_dir], PsshExecInfo(hostfile=self.jarvis.hostfile,
