@@ -4,7 +4,7 @@
 steps=(1280 640 320 160 80 40 20 10 5)
 nprocs_values=(256 128 64 32 16 8 4 2 1)
 location="hdd"
-report="case1_hdd_256"
+report="case1_eva2_2"
 for i in ${!steps[@]}; do
   step=${steps[$i]}
   nprocs=${nprocs_values[$i]}

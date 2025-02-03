@@ -37,6 +37,12 @@ class HashingCompare(Application):
                 'default': 4,
             },
             {
+                'name': 'db_path',
+                'msg': 'Path where the DB will be stored',
+                'type': str,
+                'default': 'benchmark_metadata.db',
+            },
+            {
                 'name': 'ppn',
                 'msg': 'Processes per node',
                 'type': int,

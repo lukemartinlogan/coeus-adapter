@@ -4,14 +4,8 @@
 L_values=(1296 1024 832 640 512 408 324 256 203)
 nprocs_values=(256 128 64 32 16 8 4 2 1)
 location="hdd"
-report="case1_3_hdd"
+report="case1_eva_2"
 
-jarvis repo create case1_eva_1 app
-jarvis cd case1_eva_1
-jarvis ppl append adios2_gray_scott engine=bp5
-jarvis ppl append adios_hashing engine=bp5
-jarvis repo create hashing_compare
-jarvis ppl append hashing_compare
 for i in ${!L_values[@]}; do
   L=${L_values[$i]}
   nprocs=${nprocs_values[$i]}
