@@ -31,7 +31,10 @@ HermesEngine::HermesEngine(adios2::core::IO &io,//NOLINT
   Hermes = std::make_shared<coeus::Hermes>();
   //  mpiComm = std::make_shared<coeus::MPI>(comm.Duplicate());
   Init_();
-  engine_logger->info("rank {} with name {} and mode {}", rank, name, adios2::ToString(mode));
+        Timer autoStartTimer("AutoStart", true);  // Starts immediately
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        autoStartTimer.print_csv();
+        engine_logger->info("rank {} with name {} and mode {}", rank, name, adios2::ToString(mode));
 
 
 }

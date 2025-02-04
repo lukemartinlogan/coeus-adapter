@@ -43,7 +43,7 @@
 #include <comms/MPI.h>
 #include "common/globalVariable.h"
 #include "common/Tracer.h"
-
+#include "common/Timer.h"
 namespace coeus {
 
 class HermesEngine : public adios2::plugin::PluginEngineInterface {
