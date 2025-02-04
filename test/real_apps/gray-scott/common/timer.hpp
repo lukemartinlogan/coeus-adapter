@@ -3,51 +3,58 @@
 
 #include <chrono>
 
-class Timer
-{
-private:
-    bool _is_running;
-    std::chrono::steady_clock::time_point _start;
-    std::chrono::steady_clock::duration _total;
-
-    double _to_millis(std::chrono::steady_clock::duration duration) const
-    {
-        std::chrono::duration<double, std::milli> duration_ms(duration);
-        return duration_ms.count();
-    }
-
+class Timer {
 public:
-    Timer()
-    : _is_running(false), _total(std::chrono::steady_clock::duration::zero())
-    {
+    explicit Timer(const std::string& timer_name, bool start_now = false)
+            : name(timer_name), time_elapsed(0), running(false) {
+        if (start_now) {
+            startTime();
+        }
     }
 
-    void start()
-    {
-        _is_running = true;
-        _start = std::chrono::steady_clock::now();
+    void startTime() {
+        t1 = std::chrono::high_resolution_clock::now();
+        time_elapsed = 0;
+        running = true;
     }
 
-    double stop()
-    {
-        _is_running = false;
-
-        const auto elapsed = std::chrono::steady_clock::now() - _start;
-
-        _total += elapsed;
-
-        return _to_millis(elapsed);
+    __attribute__((always_inline)) void resumeTime() {
+        if (!running) {
+            t1 = std::chrono::high_resolution_clock::now();
+            running = true;
+        }
     }
 
-    void reset()
-    {
-        _is_running = false;
-        _total = std::chrono::steady_clock::duration::zero();
+    __attribute__((always_inline)) void pauseTime() {
+        if (running) {
+            auto t2 = std::chrono::high_resolution_clock::now();
+            time_elapsed += std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+            running = false;
+        }
     }
 
-    bool is_running() const { return _is_running; }
+    double endTime() {
+        if (running) {
+            pauseTime();
+        }
+        return time_elapsed / 1000000.0;
+    }
 
-    double elapsed() const { return _to_millis(_total); }
+    double getTimeElapsed() {
+        return time_elapsed / 1000000.0;
+    }
+
+    void print_csv() {
+        if (running) {
+            pauseTime();
+        }
+        std::cout << name << "," << getTimeElapsed() << std::endl;
+    }
+
+private:
+    std::string name;
+    std::chrono::high_resolution_clock::time_point t1;
+    double time_elapsed;
+    bool running;
 };
-
 #endif

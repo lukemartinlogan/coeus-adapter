@@ -30,9 +30,10 @@ HermesEngine::HermesEngine(adios2::core::IO &io,//NOLINT
     : adios2::plugin::PluginEngineInterface(io, name, mode, comm.Duplicate()) {
   Hermes = std::make_shared<coeus::Hermes>();
   //  mpiComm = std::make_shared<coeus::MPI>(comm.Duplicate());
+
   Init_();
         Timer autoStartTimer("AutoStart", true);  // Starts immediately
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
         autoStartTimer.print_csv();
         engine_logger->info("rank {} with name {} and mode {}", rank, name, adios2::ToString(mode));
 
@@ -201,13 +202,13 @@ void HermesEngine::Init_() {
  * Close the Engine.
  * */
 void HermesEngine::DoClose(const int transportIndex) {
-  TRACE_FUNC("engine close");
+
 
   open = false;
 }
 
 HermesEngine::~HermesEngine() {
-  TRACE_FUNC();
+
   delete db;
 
 }
@@ -251,17 +252,7 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
   }
     std::string bucket_name =  adiosOutput + "_step_" + std::to_string(currentStep) + "_rank" + std::to_string(rank);
     Hermes->GetBucket(bucket_name);
-// derived part
-//  if(m_OpenMode == adios2::Mode::Read){
-//      for(int i = 0; i < num_layers; i++) {
-//          Promote(currentStep + lookahead + i);
-//      }
-//  }
-//  if(m_OpenMode == adios2::Mode::Write){
-//      for(int i = 0; i < num_layers; i++) {
-//          Demote(currentStep - lookahead - i);
-//      }
-//  }
+
   return adios2::StepStatus::OK;
 }
 
@@ -354,8 +345,10 @@ size_t HermesEngine::CurrentStep() const {
 }
 
 void HermesEngine::EndStep() {
+    Timer derived_variables("derived_variables", true);  // Starts immediately
 
     ComputeDerivedVariables();
+    derived_variables.print_csv();
 //  if (m_OpenMode == adios2::Mode::Write) {
 //    if (rank % ppn == 0) {
 //      DbOperation db_op(uid, currentStep);
@@ -467,13 +460,15 @@ void HermesEngine::ElementMinMax(adios2::MinMaxStruct &MinMax, void *element) {
 }
 
 void HermesEngine::LoadMetadata() {
+    Timer LoadMetadata("LoadMetadata", true);  // Starts immediately
 
-  auto metadata_vector = db->GetAllVariableMetadata(currentStep, rank);
+    auto metadata_vector = db->GetAllVariableMetadata(currentStep, rank);
   for (auto &variableMetadata : metadata_vector) {
     DefineVariable(variableMetadata);
+
   }
 
-
+    LoadMetadata.print_csv();
 }
 
 void HermesEngine::DefineVariable(const VariableMetadata &variableMetadata) {
@@ -573,13 +568,15 @@ void HermesEngine::DoPutDeferred_(
   meta_logger_put->info("metadata: {}", metaInfoToString(metaInfo));
 #endif
   // database
+
   VariableMetadata vm(variable.m_Name, variable.m_Shape, variable.m_Start,
                       variable.m_Count, variable.IsConstantDims(), true,
                       adios2::ToString(variable.m_Type));
   BlobInfo blobInfo(Hermes->bkt->name, name);
+    Timer metadata_time_PutDeferred("metadata_time_PutDeferred_" + name , true);
   DbOperation db_op(currentStep, rank, std::move(vm), name, std::move(blobInfo));
        client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
-
+    metadata_time_PutDeferred.print_csv();
 
 }
 
@@ -595,12 +592,19 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
         total_count *= count;
     }
     Hermes->bkt->Put(name, total_count * sizeof(T), values);
+    Timer metadata_time_put_derived("metadata_time_put_derived" + name , true);
     DbOperation db_op = generateMetadata(variable, (float *) values, total_count);
     client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
     // switch the bucket
+
+    metadata_time_put_derived.print_csv();
+
+
+
     int current_bucket = stoi(adiosOutput);
     if (current_bucket > 2) {
         // time here
+        Timer derived_variables("derived_variables_compare", true);  // Starts immediately
         T* values2 = new T[total_count];
         std::string previous_bucket_name =
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
@@ -619,6 +623,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                 }
             }
         }
+        derived_variables_compare.print_csv();
 
 
     }

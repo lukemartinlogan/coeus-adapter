@@ -99,12 +99,16 @@ int main(int argc, char **argv)
         }
         MPI_Abort(MPI_COMM_WORLD, -1);
     }
-
+    Timer gs_setting_up("gs_setting_up", true);
     Settings settings = Settings::from_json(argv[1]);
+
     bool derived = atoi(argv[2]);
 
     GrayScott sim(settings, comm);
+    gs_setting_up.print_csv();
+    Timer gs_init_up("gs_init_up", true);
     sim.init();
+    gs_init_up.print_csv();
 
     adios2::ADIOS adios(settings.adios_config, comm);
     adios2::IO io_main = adios.DeclareIO("SimulationOutput");
@@ -123,7 +127,7 @@ int main(int argc, char **argv)
     writer_main.open(settings.output, (restart_step > 0));
 
     auto app_start_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
-
+    Timer gs_loop("gs_loop", true);  // Starts immediately
     if (rank == 0)
     {
         print_io_settings(io_main);
@@ -133,34 +137,16 @@ int main(int argc, char **argv)
         std::cout << "========================================" << std::endl;
     }
 
-#ifdef ENABLE_TIMERS
-    Timer timer_total;
-    Timer timer_compute;
-    Timer timer_write;
 
-    std::ostringstream log_fname;
-    log_fname << "gray_scott_pe_" << rank << ".log";
-
-    std::ofstream log(log_fname.str());
-    log << "step\ttotal_gs\tcompute_gs\twrite_gs" << std::endl;
-#endif
 
     for (int it = restart_step; it < settings.steps;)
     {
-#ifdef ENABLE_TIMERS
-        MPI_Barrier(comm);
-        timer_total.start();
-        timer_compute.start();
-#endif
+
 
         sim.iterate();
         it++;
 
-#ifdef ENABLE_TIMERS
-        timer_compute.stop();
-        MPI_Barrier(comm);
-        timer_write.start();
-#endif
+
 
         if (it % settings.plotgap == 0)
         {
@@ -179,27 +165,14 @@ int main(int argc, char **argv)
             WriteCkpt(comm, it, settings, sim, io_ckpt);
         }
 
-#ifdef ENABLE_TIMERS
-        double time_write = timer_write.stop();
-        double time_step = timer_total.stop();
-        MPI_Barrier(comm);
 
-        log << it << "\t" << timer_total.elapsed() << "\t"
-            << timer_compute.elapsed() << "\t" << timer_write.elapsed()
-            << std::endl;
-#endif
     }
-
+    Timer gs_close("gs_close", true);
     writer_main.close();
+    gs_close.print_csv()
 
-#ifdef ENABLE_TIMERS
-    log << "total\t" << timer_total.elapsed() << "\t" << timer_compute.elapsed()
-        << "\t" << timer_write.elapsed() << std::endl;
-
-    log.close();
-#endif
     MPI_Barrier(comm);
-
+    gs_loop.print_csv()
     auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
     auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
     logger.info("Rank {} - ET {} - milliseconds", rank, app_duration.count());

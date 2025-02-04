@@ -239,26 +239,11 @@ int main(int argc, char *argv[])
     std::vector<double> u;
     int step;
 
-#ifdef ENABLE_TIMERS
-    Timer timer_total;
-    Timer timer_read;
-    Timer timer_compute;
-    Timer timer_write;
 
-    std::ostringstream log_fname;
-    log_fname << "isosurface_pe_" << rank << ".log";
-
-    std::ofstream log(log_fname.str());
-    log << "step\ttotal_iso\tread_iso\tcompute_iso\twrite_iso" << std::endl;
-#endif
 
     while (true)
     {
-#ifdef ENABLE_TIMERS
-        MPI_Barrier(comm);
-        timer_total.start();
-        timer_read.start();
-#endif
+
 
         adios2::StepStatus status = reader.BeginStep();
 
@@ -302,11 +287,7 @@ int main(int argc, char *argv[])
         reader.Get<int>(varStep, step);
         reader.EndStep();
 
-#ifdef ENABLE_TIMERS
-        double time_read = timer_read.stop();
-        MPI_Barrier(comm);
-        timer_compute.start();
-#endif
+
 
         auto appendFilter = vtkSmartPointer<vtkAppendPolyData>::New();
 
@@ -318,32 +299,15 @@ int main(int argc, char *argv[])
 
         appendFilter->Update();
 
-#ifdef ENABLE_TIMERS
-        double time_compute = timer_compute.stop();
-        MPI_Barrier(comm);
-        timer_write.start();
-#endif
+
 
         write_adios(writer, appendFilter->GetOutput(), varPoint, varCell,
                     varNormal, varOutStep, step, comm);
 
-#ifdef ENABLE_TIMERS
-        double time_write = timer_write.stop();
-        double time_step = timer_total.stop();
-        MPI_Barrier(comm);
 
-        log << step << "\t" << time_step << "\t" << time_read << "\t"
-            << time_compute << "\t" << time_write << std::endl;
-#endif
     }
 
-#ifdef ENABLE_TIMERS
-    log << "total\t" << timer_total.elapsed() << "\t" << timer_read.elapsed()
-        << "\t" << timer_compute.elapsed() << "\t" << timer_write.elapsed()
-        << std::endl;
 
-    log.close();
-#endif
 
     writer.Close();
     reader.Close();

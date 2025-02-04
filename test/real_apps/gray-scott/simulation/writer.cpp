@@ -1,5 +1,5 @@
 #include "../../gray-scott/simulation/writer.h"
-
+#include "../../gray-scott/common/timer.hpp"
 std::string concatenateVectorToString(const std::vector<size_t>& vec) {
   std::stringstream ss;
   ss << "( ";
@@ -197,12 +197,21 @@ void Writer::write(int step, const GrayScott &sim, int rank)
 //          << " Shape Var V " << concatenateVectorToString(var_v.Shape())
 //         <<std::endl;
 //        }
-
+        Timer gs_beginStep("gs_beginStep", true);
         writer.BeginStep();
+        gs_beginStep.print_csv();
+        Timer gs_put_steps("gs_put_steps", true);
         writer.Put<int>(var_step, &step);
+        gs_put_steps.print_csv();
+        Timer gs_put_variables_u("gs_put_variables_u", true);
         writer.Put<double>(var_u, u.data());
+        gs_put_variables_u.print_csv();
+        Timer gs_put_variables_v("gs_put_variables_v", true);
         writer.Put<double>(var_v, v.data());
+        gs_put_variables_v.print_csv();
+        Timer gs_endstep("gs_endstep", true);
         writer.EndStep();
+        gs_endstep.print_csv();
     }
 }
 
