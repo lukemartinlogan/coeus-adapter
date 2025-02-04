@@ -32,9 +32,9 @@ HermesEngine::HermesEngine(adios2::core::IO &io,//NOLINT
   //  mpiComm = std::make_shared<coeus::MPI>(comm.Duplicate());
 
   Init_();
-        Timer autoStartTimer("AutoStart", true);  // Starts immediately
 
-        autoStartTimer.print_csv();
+
+
         engine_logger->info("rank {} with name {} and mode {}", rank, name, adios2::ToString(mode));
 
 
@@ -345,10 +345,10 @@ size_t HermesEngine::CurrentStep() const {
 }
 
 void HermesEngine::EndStep() {
-    Timer derived_variables("derived_variables", true);  // Starts immediately
+    Timer coeus_derived_variables("coeus_derived_variables", true);  // Starts immediately
 
     ComputeDerivedVariables();
-    derived_variables.print_csv();
+    coeus_derived_variables.print_csv();
 //  if (m_OpenMode == adios2::Mode::Write) {
 //    if (rank % ppn == 0) {
 //      DbOperation db_op(uid, currentStep);
@@ -460,7 +460,7 @@ void HermesEngine::ElementMinMax(adios2::MinMaxStruct &MinMax, void *element) {
 }
 
 void HermesEngine::LoadMetadata() {
-    Timer LoadMetadata("LoadMetadata", true);  // Starts immediately
+    Timer LoadMetadata("coeus_LoadMetadata", true);  // Starts immediately
 
     auto metadata_vector = db->GetAllVariableMetadata(currentStep, rank);
   for (auto &variableMetadata : metadata_vector) {
@@ -573,7 +573,7 @@ void HermesEngine::DoPutDeferred_(
                       variable.m_Count, variable.IsConstantDims(), true,
                       adios2::ToString(variable.m_Type));
   BlobInfo blobInfo(Hermes->bkt->name, name);
-    Timer metadata_time_PutDeferred("metadata_time_PutDeferred_" + name , true);
+    Timer metadata_time_PutDeferred("coeus_metadata_time_PutDeferred_" + name , true);
   DbOperation db_op(currentStep, rank, std::move(vm), name, std::move(blobInfo));
        client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
     metadata_time_PutDeferred.print_csv();
@@ -592,7 +592,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
         total_count *= count;
     }
     Hermes->bkt->Put(name, total_count * sizeof(T), values);
-    Timer metadata_time_put_derived("metadata_time_put_derived" + name , true);
+    Timer metadata_time_put_derived("coeus_metadata_time_put_derived" + name , true);
     DbOperation db_op = generateMetadata(variable, (float *) values, total_count);
     client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
     // switch the bucket
@@ -604,7 +604,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     int current_bucket = stoi(adiosOutput);
     if (current_bucket > 2) {
         // time here
-        Timer derived_variables_compare("derived_variables_compare", true);  // Starts immediately
+        Timer derived_variables_compare("coeus_derived_variables_compare", true);  // Starts immediately
         T* values2 = new T[total_count];
         std::string previous_bucket_name =
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
