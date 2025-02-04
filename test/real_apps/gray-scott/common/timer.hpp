@@ -1,8 +1,9 @@
 #ifndef __TIMER_HPP__
 #define __TIMER_HPP__
 
+#include <iostream>
 #include <chrono>
-
+#include <string>
 class Timer {
 public:
     explicit Timer(const std::string& timer_name, bool start_now = false)
@@ -57,4 +58,5 @@ private:
     double time_elapsed;
     bool running;
 };
+
 #endif
