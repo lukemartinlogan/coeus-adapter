@@ -604,7 +604,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     int current_bucket = stoi(adiosOutput);
     if (current_bucket > 2) {
         // time here
-        Timer derived_variables("derived_variables_compare", true);  // Starts immediately
+        Timer derived_variables_compare("derived_variables_compare", true);  // Starts immediately
         T* values2 = new T[total_count];
         std::string previous_bucket_name =
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
