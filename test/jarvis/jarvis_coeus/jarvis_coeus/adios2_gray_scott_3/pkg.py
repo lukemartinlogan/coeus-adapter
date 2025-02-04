@@ -264,6 +264,7 @@ class Adios2GrayScott3(Application):
                              dbg_port=self.config['dbg_port']
                              ))
         elif self.config['engine'].lower() in ['hermes', 'bp5']:
+            derived = 0
             Exec(f'adios2-gray-scott {self.settings_json_path}',
                 MpiExecInfo(nprocs=self.config['nprocs'],
                          ppn=self.config['ppn'],

@@ -4,7 +4,7 @@
 L_values=(1296 1024 832 640 512 408 324 256 203)
 nprocs_values=(256 128 64 32 16 8 4 2 1)
 location="hdd"
-report="case1_eva_2"
+report="case1_2"
 
 for i in ${!L_values[@]}; do
   L=${L_values[$i]}
