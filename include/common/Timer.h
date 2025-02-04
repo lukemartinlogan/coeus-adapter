@@ -1,7 +1,7 @@
 //
 // Created by Hua on 2/4/2025.
 //
-
+#include <iostream>
 #ifndef COEUS_ADAPTER_TIMER_H
 #define COEUS_ADAPTER_TIMER_H
 class Timer {
