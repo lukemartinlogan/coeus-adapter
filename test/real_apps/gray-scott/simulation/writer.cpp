@@ -84,30 +84,33 @@ Writer::Writer(const Settings &settings, const GrayScott &sim, adios2::IO io, bo
 
     io.DefineAttribute<std::string>("Fides_Variable_Associations", assocList.data(), assocList.size());
 
-
+    Timer gs_DefineVariable("gs_DefineVariable_u" , true);
     var_u =
         io.DefineVariable<double>("U", {settings.L, settings.L, settings.L},
                                   {sim.offset_z, sim.offset_y, sim.offset_x},
                                   {sim.size_z, sim.size_y, sim.size_x});
-
+    gs_DefineVariable.print_csv();
+    Timer gs_DefineVariable_v("gs_DefineVariable_v" , true);
     var_v =
         io.DefineVariable<double>("V", {settings.L, settings.L, settings.L},
                                   {sim.offset_z, sim.offset_y, sim.offset_x},
                                   {sim.size_z, sim.size_y, sim.size_x});
-
+    gs_DefineVariable_v.print_csv_v();
 
     if(derived == 1) {
         std::cout << "use derived variables" << std::endl;
+        Timer gs_DefineDerivedVariable("gs_DefineDerivedVariable_derive/hashU", true);
         auto PDFU = io.DefineDerivedVariable("derive/hashU",
                                              "x = U \n"
                                              "hash(x)",
                                              adios2::DerivedVarType::StoreData);
-
+        gs_DefineDerivedVariable.print_csv();
+        Timer gs_DefineDerivedVariable_v("gs_DefineDerivedVariable_" , true);
         auto PDFV = io.DefineDerivedVariable("derive/hashV",
                                              "x = V \n"
                                              "hash(x)",
                                              adios2::DerivedVarType::StoreData);
-
+        gs_DefineDerivedVariable_v.print_csv();
     }
 
 
