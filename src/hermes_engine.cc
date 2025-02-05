@@ -472,6 +472,7 @@ void HermesEngine::LoadMetadata() {
 }
 
 void HermesEngine::DefineVariable(const VariableMetadata &variableMetadata) {
+  Timer coeus_define_variables("coeus_define_variables" + variableMetadata.name , true);  
   if (currentStep != 1) {
     // If the metadata is defined delete current value to update it
     m_IO.RemoveVariable(variableMetadata.name);
@@ -491,6 +492,7 @@ void HermesEngine::DefineVariable(const VariableMetadata &variableMetadata) {
   }
   ADIOS2_FOREACH_STDTYPE_1ARG(DEFINE_VARIABLE)
 #undef DEFINE_VARIABLE
+  coeus_define_variables.print_csv();
 }
 
 
@@ -586,6 +588,7 @@ void HermesEngine::DoPutDeferred_(
 template <typename T>
 void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                                   T *values) {
+  Timer coeus_put_derived_variables("coeus_Put_derived" + variable.m_Name , true);  
     std::string name = variable.m_Name;
     int total_count = 1;
     for (auto count: variable.m_Count) {
@@ -624,10 +627,11 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                 }
             }
         }
-        derived_variables_compare.print_csv();
+        coeus_put_derived_variables.print_csv();
 
 
     }
+   metadata_time_put_derived.print_csv();
 }
 
 
