@@ -472,7 +472,7 @@ void HermesEngine::LoadMetadata() {
 }
 
 void HermesEngine::DefineVariable(const VariableMetadata &variableMetadata) {
-  Timer coeus_define_variables("coeus_define_variables" + variableMetadata.name , true);  
+  Timer coeus_define_variables("coeus_define_variables_" + variableMetadata.name , true);  
   if (currentStep != 1) {
     // If the metadata is defined delete current value to update it
     m_IO.RemoveVariable(variableMetadata.name);
@@ -588,7 +588,7 @@ void HermesEngine::DoPutDeferred_(
 template <typename T>
 void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                                   T *values) {
-  Timer coeus_put_derived_variables("coeus_Put_derived" + variable.m_Name , true);  
+  Timer coeus_put_derived_variables("coeus_Put_derived_" + variable.m_Name , true);  
     std::string name = variable.m_Name;
     int total_count = 1;
     for (auto count: variable.m_Count) {
