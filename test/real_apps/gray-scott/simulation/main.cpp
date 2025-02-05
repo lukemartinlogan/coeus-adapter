@@ -104,6 +104,7 @@ int main(int argc, char **argv)
 
     bool derived = atoi(argv[2]);
 
+
     GrayScott sim(settings, comm);
     gs_setting_up.print_csv();
     Timer gs_init_up("gs_init_up", true);

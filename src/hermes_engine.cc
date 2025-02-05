@@ -609,8 +609,9 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
         std::string previous_bucket_name =
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
                 std::to_string(rank);
+        Timer coeus_inquire_metadata_hashing("coeus_inquire_metadata_hashing", true);
         if (db->FindVariable(currentStep, rank, name,previous_bucket_name)) {
-
+            coeus_inquire_metadata_hashing.print_csv();
             Hermes->GetBucket(previous_bucket_name);
             auto blob = Hermes->bkt->Get(name);
             memcpy(values2, blob.data(), blob.size());
