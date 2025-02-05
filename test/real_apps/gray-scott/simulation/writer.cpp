@@ -95,7 +95,7 @@ Writer::Writer(const Settings &settings, const GrayScott &sim, adios2::IO io, bo
         io.DefineVariable<double>("V", {settings.L, settings.L, settings.L},
                                   {sim.offset_z, sim.offset_y, sim.offset_x},
                                   {sim.size_z, sim.size_y, sim.size_x});
-    gs_DefineVariable_v.print_csv_v();
+    gs_DefineVariable_v.print_csv();
 
     if(derived == 1) {
         std::cout << "use derived variables" << std::endl;
