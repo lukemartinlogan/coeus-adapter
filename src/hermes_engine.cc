@@ -607,6 +607,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     int current_bucket = stoi(adiosOutput);
     if (current_bucket > 2) {
         // time here
+        std::cout << "compare" << std::endl;
         Timer derived_variables_compare("coeus_derived_variables_compare", true);  // Starts immediately
         T* values2 = new T[total_count];
         std::string previous_bucket_name =
@@ -627,11 +628,11 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                 }
             }
         }
-        coeus_put_derived_variables.print_csv();
+        derived_variables_compare.print_csv();
 
 
     }
-   metadata_time_put_derived.print_csv();
+
 }
 
 
