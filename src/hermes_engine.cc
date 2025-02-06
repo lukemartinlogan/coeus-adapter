@@ -595,6 +595,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
         total_count *= count;
     }
     Hermes->bkt->Put(name, total_count * sizeof(T), values);
+    coeus_put_derived_variables_print_csv();
     Timer metadata_time_put_derived("coeus_metadata_time_put_derived" + name , true);
     DbOperation db_op = generateMetadata(variable, (float *) values, total_count);
     client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
