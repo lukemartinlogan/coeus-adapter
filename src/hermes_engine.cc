@@ -607,14 +607,19 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     int current_bucket = stoi(adiosOutput);
     if (current_bucket > 2) {
         // time here
-        std::cout << "compare" << std::endl;
+
         Timer derived_variables_compare("coeus_derived_variables_compare", true);  // Starts immediately
         T* values2 = new T[total_count];
         std::string previous_bucket_name =
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
                 std::to_string(rank);
+
         Timer coeus_inquire_metadata_hashing("coeus_inquire_metadata_hashing", true);
+        auto app_start_time = std::chrono::high_resolution_clock::now();
         if (db->FindVariable(currentStep, rank, name,previous_bucket_name)) {
+            auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
+            auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
+            std::cout << "coeus_inquire_metadata_hashing"  <<  app_duration.count() << std::endl;
             coeus_inquire_metadata_hashing.print_csv();
             Hermes->GetBucket(previous_bucket_name);
             auto blob = Hermes->bkt->Get(name);
