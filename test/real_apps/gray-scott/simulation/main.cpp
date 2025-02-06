@@ -128,7 +128,7 @@ int main(int argc, char **argv)
     writer_main.open(settings.output, (restart_step > 0));
 
     auto app_start_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
-    Timer gs_loop("gs_loop", true);  // Starts immediately
+
     if (rank == 0)
     {
         print_io_settings(io_main);
@@ -143,8 +143,10 @@ int main(int argc, char **argv)
     for (int it = restart_step; it < settings.steps;)
     {
 
-
+        Timer gs_loop("gs_loop", true);  // Starts immediately
+        Timer gs_computation("gs_computation", true);
         sim.iterate();
+        gs_computation.print_csv();
         it++;
 
 
@@ -166,6 +168,7 @@ int main(int argc, char **argv)
             WriteCkpt(comm, it, settings, sim, io_ckpt);
         }
 
+        gs_loop.print_csv();
 
     }
     Timer gs_close("gs_close", true);
