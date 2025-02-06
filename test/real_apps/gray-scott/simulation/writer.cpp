@@ -105,7 +105,7 @@ Writer::Writer(const Settings &settings, const GrayScott &sim, adios2::IO io, bo
                                              "hash(x)",
                                              adios2::DerivedVarType::StoreData);
         gs_DefineDerivedVariable.print_csv();
-        Timer gs_DefineDerivedVariable_v("gs_DefineDerivedVariable_" , true);
+        Timer gs_DefineDerivedVariable_v("gs_DefineDerivedVariable_derive/hashV" , true);
         auto PDFV = io.DefineDerivedVariable("derive/hashV",
                                              "x = V \n"
                                              "hash(x)",

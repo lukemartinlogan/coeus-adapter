@@ -602,8 +602,6 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
 
     metadata_time_put_derived.print_csv();
 
-
-
     int current_bucket = stoi(adiosOutput);
     if (current_bucket > 2) {
         // time here
