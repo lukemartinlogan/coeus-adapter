@@ -614,14 +614,10 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
                 std::to_string(rank);
 
-        Timer coeus_inquire_metadata_hashing("coeus_inquire_metadata_hashing", true);
-        auto app_start_time = std::chrono::high_resolution_clock::now();
+
+
         if (db->FindVariable(currentStep, rank, name,previous_bucket_name)) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
-            auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
-            std::cout << "coeus_inquire_metadata_hashing"  <<  app_duration.count() << std::endl;
-            coeus_inquire_metadata_hashing.print_csv();
+
             Hermes->GetBucket(previous_bucket_name);
             auto blob = Hermes->bkt->Get(name);
             memcpy(values2, blob.data(), blob.size());
