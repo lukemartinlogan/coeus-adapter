@@ -604,7 +604,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     metadata_time_put_derived.print_csv();
 
     int current_bucket = stoi(adiosOutput);
-    if (current_bucket > 2) {
+    if (current_bucket > 1) {
         // time here
 
         Timer derived_variables_compare("coeus_derived_variables_compare", true);  // Starts immediately

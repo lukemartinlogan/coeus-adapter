@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define variables
-L_values=(1296 1024 832 640 512 408 324 256 203)
+L_values=(848 680 540 512 428 340 268 214 170)
 nprocs_values=(256 128 64 32 16 8 4 2 1)
 location="hdd"
 report="case2_hdd"
