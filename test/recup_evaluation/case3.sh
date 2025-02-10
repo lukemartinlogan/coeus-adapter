@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Define variables
-L_values=(1296 1024 832 640 512 408 324 256 203)
+L_values=(134 170 214 268 340 428 540 680 848)
 nprocs_values=(256 128 64 32 16 8 4 2 1)
 location="hdd"
-report="case3_eva_1_1"
+report="eva1_case3"
 for i in ${!L_values[@]}; do
   L=${L_values[$i]}
   nprocs=${nprocs_values[$i]}

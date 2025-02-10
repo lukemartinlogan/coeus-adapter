@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # Define variables
-L_values=(1296 1024 832 640 512 408 324 256 203)
-nprocs_values=(256 128 64 32 16 8 4 2 1)
+L_values=(134 170 214 268 340 428 540 680 848)
+nprocs_values=(1 2 4 8 16 32 64 128 256)
 location="hdd"
-report="case1_2"
+report="case1_fixed_step"
 
 for i in ${!L_values[@]}; do
   L=${L_values[$i]}
   nprocs=${nprocs_values[$i]}
-  jarvis cd case1_eva_1
+  jarvis cd gray_scott_bp5
   # First configuration and run
   mkdir -p ~/${report}/${nprocs}process
   jarvis pkg config adios2_gray_scott out_file=/mnt/${location}/hxu40/ofs-mount/case1/${nprocs}process/out1.bp ppn=20 nprocs=$nprocs steps=40 L=$L checkpoint_output=/mnt/${location}/hxu40/ofs-mount/case1/ckpt.bp

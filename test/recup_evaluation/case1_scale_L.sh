@@ -1,10 +1,13 @@
 #!/bin/bash
 
 # Define variables
-steps=(1280 640 320 160 80 40 20 10 5)
-nprocs_values=(256 128 64 32 16 8 4 2 1)
+steps=(2 4 8 16 32 64 128 256 512)
+#(2 4 8 16 32 64 128 256 512)
+#(10 20 40 80 160 320 640 1280 2560)
+#(1 2 4 8 16 32 64 128 256)
+nprocs_values=(1 2 4 8 16 32 64 128 256)
 location="hdd"
-report="case1"
+report="eva2_case1"
 for i in ${!steps[@]}; do
   step=${steps[$i]}
   nprocs=${nprocs_values[$i]}
