@@ -592,7 +592,8 @@ void HermesEngine::DoPutDeferred_(
 template <typename T>
 void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                                   T *values) {
-  Timer coeus_put_derived_variables("coeus_Put_derived_" + variable.m_Name , true);  
+    Timer coeus_overall_put_derive_variables("coeus_overall_put_derived_" + variable.m_Name , true);
+    Timer coeus_put_derived_variables("coeus_Put_derived_" + variable.m_Name , true);
     std::string name = variable.m_Name;
     int total_count = 1;
     for (auto count: variable.m_Count) {
@@ -639,6 +640,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
 
 
     }
+    coeus_overall_put_derive_variables.print_csv();
 
 }
 
