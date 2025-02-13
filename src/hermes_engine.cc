@@ -596,18 +596,18 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
     }
     Hermes->bkt->Put(name, total_count * sizeof(T), values);
     coeus_put_derived_variables.print_csv();
+
     Timer metadata_time_put_derived("coeus_metadata_time_put_derived" + name , true);
     DbOperation db_op = generateMetadata(variable, (float *) values, total_count);
     client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
     // switch the bucket
-
     metadata_time_put_derived.print_csv();
 
     int current_bucket = stoi(adiosOutput);
     if (current_bucket > 2) {
         // time here
 
-        Timer derived_variables_compare("coeus_derived_variables_compare", true);  // Starts immediately
+
         T* values2 = new T[total_count];
         std::string previous_bucket_name =
                 std::to_string(current_bucket - 1) + "_step_" + std::to_string(currentStep) + "_rank" +
@@ -616,11 +616,12 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
 
 
         if (db->FindVariable(currentStep, rank, name,previous_bucket_name)) {
-
+            Timer compare_get_previous_hashing_codes("coeus_compare_get_previous_hashing_codes" + name, true);
             Hermes->GetBucket(previous_bucket_name);
             auto blob = Hermes->bkt->Get(name);
             memcpy(values2, blob.data(), blob.size());
-
+            compare_get_previous_hashing_codes.print_csv();
+            Timer derived_variables_compare("coeus_derived_variables_compare", true);  // Starts immediately
             for (int i = 0; i < total_count; ++i) {
                 if (static_cast<int>(values[i]) - static_cast<int>(values2[i]) > 0.01) {
                     auto app_end_time = std::chrono::system_clock::now();
@@ -628,8 +629,9 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                     engine_logger->info("The difference happened at {}", std::ctime(&end_time_t));
                 }
             }
+            derived_variables_compare.print_csv();
         }
-        derived_variables_compare.print_csv();
+
 
 
     }
