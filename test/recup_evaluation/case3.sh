@@ -2,7 +2,7 @@
 
 # Define variables
 L_values=(134 170 214 268 340 428 540 680 848)
-nprocs_values=(256 128 64 32 16 8 4 2 1)
+nprocs_values=(1 2 4 8 16 32 64 128 )
 location="hdd"
 report="eva1_case3"
 for i in ${!L_values[@]}; do
