@@ -19,7 +19,7 @@
 #include <string>
 #include <thread>
 #include <vector>
-
+#include "../../gray-scott/common/timer.hpp"
 #include "adios2.h"
 #include <mpi.h>
 
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 
     std::string in_filename;
     std::string out_filename;
-
+    Timer gs_compare_setting_up("gs_compare_setting_up" , true);
     bool write_inputvars = false;
     in_filename = argv[1];
     out_filename = argv[2];
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
 
     // read data step-by-step
     int stepAnalysis = 0;
-
+    gs_compare_setting_up.print_csv();
     while (true)
     {
         // Begin read step
@@ -170,6 +170,7 @@ int main(int argc, char *argv[])
         // Set the selection at the first step only, assuming that
         // the variable dimensions do not change across timesteps
         if (firstStep) {
+            Timer gs_compare_first_step("gs_compare_first_step" , true);
             shape = var_u_in.Shape();
             // Calculate global and local sizes of U and V
             u_global_size = shape[0] * shape[1] * shape[2];
@@ -186,22 +187,33 @@ int main(int argc, char *argv[])
             if (write_inputvars) {
             }
             firstStep = false;
+            gs_compare_first_step.print_csv();
         }
 
 //        var_u_in.SetSelection(adios2::Box<adios2::Dims>(
 //                {start1, 0, 0}, {count1, shape[1], shape[2]}));
 //        var_v_in.SetSelection(adios2::Box<adios2::Dims>(
 //                {start1, 0, 0}, {count1, shape[1], shape[2]}));
-
+        Timer gs_compare_inquire_variable("gs_compare_inquire_variable" , true);
         auto varhash_U_1 = reader_io.InquireVariable<uint8_t>("derive/hashU");
         auto varhash_V_1 = reader_io.InquireVariable<uint8_t>("derive/hashV");
         auto varhash_U_2 = reader2_io.InquireVariable<uint8_t>("derive/hashU");
         auto varhash_V_2 = reader2_io.InquireVariable<uint8_t>("derive/hashV");
+        gs_compare_inquire_variable.print_csv();
+        Timer gs_compare_inquire_variable_U_1("gs_compare_inquire_variable_U_1" , true);
         reader.Get(varhash_U_1, readHashU_1);
+        gs_compare_inquire_variable_U_1.print_csv();
+        Timer gs_compare_inquire_variable_V_1("gs_compare_inquire_variable_V_1" , true);
         reader.Get(varhash_V_1, readHashV_1);
+        gs_compare_inquire_variable_V_1.print_csv();
+        Timer gs_compare_inquire_variable_U_2("gs_compare_inquire_variable_U_2" , true);
         reader_2.Get(varhash_U_2, readHashV_2);
+        gs_compare_inquire_variable_U_2.print_csv();
+        Timer gs_compare_inquire_variable_V_2("gs_compare_inquire_variable_V_2" , true);
         reader_2.Get(varhash_V_2, readHashU_2);
+        gs_compare_inquire_variable_V_2.print_csv();
         // compare the hash value
+        Timer gs_compare_hashing_code_compare("gs_compare_hashing_code_compare" , true);
         for(int i =0; i < readHashV_1.size(); i++){
             std::cout << static_cast<int>(readHashV_1[i]) << " value: " << static_cast<int>(readHashV_2[i]) << std::endl;
             if (static_cast<int>(readHashV_1[i]) - static_cast<int>(readHashV_2[i]) > 0.01) {
@@ -216,16 +228,23 @@ int main(int argc, char *argv[])
             }
 
         }
-
+        gs_compare_hashing_code_compare.print_csv();
         // End read step (let resources about step go)
+        Timer gs_compare_reader_1_endstep("gs_compare_reader_1_endstep" , true);
         reader.EndStep();
+        gs_compare_reader_1_endstep.print_csv();
+        Timer gs_compare_reader_2_endstep("gs_compare_reader_2_endstep" , true);
         reader_2.EndStep();
+        gs_compare_reader_2_endstep.print_csv();
         ++stepAnalysis;
     }
 
-
+    Timer gs_compare_reader_1_close("gs_compare_reader_1_close" , true);
     reader.Close();
+    gs_compare_reader_1_close.print_csv();
+    Timer gs_compare_reader_2_close("gs_compare_reader_2_close" , true);
     reader_2.Close();
+    gs_compare_reader_2_close.print_csv();
     auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
     auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
     std::cout << "rank:" << rank << ", time: " <<  app_duration.count() << std::endl;

@@ -19,6 +19,7 @@
 
 #include "adios2.h"
 #include <mpi.h>
+#include "../../gray-scott/common/timer.hpp"
 
 std::string concatenateVectorToString(const std::vector<size_t> &vec) {
     std::stringstream ss;
@@ -62,12 +63,14 @@ int main(int argc, char *argv[])
     MPI_Comm_split(MPI_COMM_WORLD, color, wrank, &comm);
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &comm_size);
-
+    Timer gs_hashing_setting_time("gs_hashing_setting_time" , true);
     std::string in_filename;
     std::string out_filename;
     bool write_inputvars = true;
     in_filename = argv[1];
     out_filename = argv[2];
+
+
 
 
     // set up dataset size
@@ -90,6 +93,7 @@ int main(int argc, char *argv[])
     // IO objects for reading and writing
     adios2::IO reader_io = ad.DeclareIO("SimulationOutput");
     adios2::IO writer_io = ad.DeclareIO("PDFAnalysisOutput");
+
     if (!rank)
     {
         std::cout << "PDF analysis reads from Simulation using engine type:  "
@@ -103,7 +107,8 @@ int main(int argc, char *argv[])
     adios2::Engine writer =
             writer_io.Open(out_filename, adios2::Mode::Write, comm);
     bool shouldIWrite = (!rank || reader_io.EngineType() == "HDF5");
-
+    // timer 1
+    gs_hashing_setting_time.print_csv();
     // read data step-by-step
     int stepAnalysis = 0;
 
@@ -130,6 +135,7 @@ int main(int argc, char *argv[])
         // Set the selection at the first step only, assuming that
         // the variable dimensions do not change across timesteps
         if (firstStep) {
+            Timer gs_hashing_first_step_time("gs_hashing_first_step_time" , true);
             shape = var_u_in.Shape();
             // Calculate global and local sizes of U and V
             u_global_size = shape[0] * shape[1] * shape[2];
@@ -164,6 +170,7 @@ int main(int argc, char *argv[])
                                                             adios2::DerivedVarType::StoreData);
             }
             firstStep = false;
+            gs_hashing_first_step_time.print_csv();
         }
         var_u_in.SetSelection(adios2::Box<adios2::Dims>(
                 {start1, 0, 0}, {count1, shape[1], shape[2]}));
@@ -171,9 +178,12 @@ int main(int argc, char *argv[])
                 {start1, 0, 0}, {count1, shape[1], shape[2]}));
 
         // Read adios2 data
-
+        Timer gs_hashing_get_variable_u("gs_hashing_get_variable_u" , true);
         reader.Get<double>(var_u_in, u);
+        gs_hashing_get_variable_u.print_csv();
+        Timer gs_hashing_get_variable_v("gs_hashing_get_variable_v" , true);
         reader.Get<double>(var_v_in, v);
+        gs_hashing_get_variable_v.print_csv();
         std::cout << "Get U: " << rank << " size: " << u.size()
                   << " Count: (" << concatenateVectorToString(var_u_in.Count()) << ") "
                   << " Start: (" << concatenateVectorToString(var_u_in.Start()) << ") "
@@ -190,24 +200,37 @@ int main(int argc, char *argv[])
             reader.Get<int>(var_step_in, &simStep);
         }
         // End read step (let resources about step go)
+        Timer gs_hashing_reader_endStep("gs_hashing_reader_endStep" , true);
         reader.EndStep();
-
+        gs_hashing_reader_endStep.print_csv();
         if (!rank)
         {
             std::cout << "PDF Analysis step " << stepAnalysis
                       << " processing sim output step " << stepSimOut
                       << " sim compute step " << simStep << std::endl;
         }
+        Timer gs_hashing_writer_beginStep("gs_hashing_writer_beginStep" , true);
         writer.BeginStep();
+        gs_hashing_writer_beginStep.print_csv();
+        Timer gs_hashing_writer_put_u("gs_hashing_writer_put_u" , true);
         writer.Put<double>(var_u_out, u.data());
+        gs_hashing_writer_put_u.print_csv();
+        Timer gs_hashing_writer_put_v("gs_hashing_writer_put_v" , true);
         writer.Put<double>(var_v_out, v.data());
+        gs_hashing_writer_put_v.print_csv();
+        Timer gs_hashing_writer_endstep("gs_hashing_writer_endstep" , true);
         writer.EndStep();
+        gs_hashing_writer_endstep.print_csv();
         ++stepAnalysis;
     }
 
     // cleanup (close reader and writer)
+    Timer gs_hashing_reader_close("gs_hashing_reader_close" , true);
     reader.Close();
+    gs_hashing_reader_close.print_csv();
+    Timer gs_hashing_writer_close("gs_hashing_writer_close" , true);
     writer.Close();
+    gs_hashing_writer_close.print_csv();
     auto app_end_time = std::chrono::high_resolution_clock::now(); // Record end time of the application
     auto app_duration = std::chrono::duration_cast<std::chrono::milliseconds>(app_end_time - app_start_time);
 
