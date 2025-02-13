@@ -536,10 +536,11 @@ void HermesEngine::DoGetDeferred_(
 template<typename T>
 void HermesEngine::DoPutSync_(const adios2::core::Variable<T> &variable,
                               const T *values) {
-  TRACE_FUNC(variable.m_Name, adios2::ToString(variable.m_Count));
+    Timer coeus_DoPutSync_hermes_time("coeus_DoPutSync_hermes_time" + variable.m_Name , true);
 
   std::string name = variable.m_Name;
   Hermes->bkt->Put(name, variable.SelectionSize() * sizeof(T), values);
+    coeus_DoPutSync_hermes_time.print_csv();
 
 #ifdef Meta_enabled
   metaInfo metaInfo(variable, adiosOpType::put);
@@ -547,13 +548,14 @@ void HermesEngine::DoPutSync_(const adios2::core::Variable<T> &variable,
 
 #endif
   // database
+    Timer coeus_DoPutSync__metadata_time("coeus_DoPutSync__metadata_time" + variable.m_Name , true);
   VariableMetadata vm(variable.m_Name, variable.m_Shape, variable.m_Start,
                       variable.m_Count, variable.IsConstantDims(), true,
                       adios2::ToString(variable.m_Type));
   BlobInfo blobInfo(Hermes->bkt->name, name);
   DbOperation db_op(currentStep, rank, std::move(vm), name, std::move(blobInfo));
   client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
-
+    coeus_DoPutSync__metadata_time.print_csv();
    
 }
 
@@ -561,16 +563,18 @@ void HermesEngine::DoPutSync_(const adios2::core::Variable<T> &variable,
 template<typename T>
 void HermesEngine::DoPutDeferred_(
     const adios2::core::Variable<T> &variable, const T *values) {
-
+    Timer coeus_DoPutDeferred_hermes_time("coeus_DoPutDeferred_hermes_time" + variable.m_Name , true);
   std::string name = variable.m_Name;
 
   Hermes->bkt->Put(name, variable.SelectionSize() * sizeof(T), values);
+    coeus_DoPutDeferred_hermes_time.print_csv();
+
 #ifdef Meta_enabled
   metaInfo metaInfo(variable, adiosOpType::put);
   meta_logger_put->info("metadata: {}", metaInfoToString(metaInfo));
 #endif
   // database
-
+    Timer coeus_DoPutDeferred_metadata_time("coeus_DoPutDeferred_metadata_time" + variable.m_Name , true);
   VariableMetadata vm(variable.m_Name, variable.m_Shape, variable.m_Start,
                       variable.m_Count, variable.IsConstantDims(), true,
                       adios2::ToString(variable.m_Type));
@@ -579,7 +583,7 @@ void HermesEngine::DoPutDeferred_(
   DbOperation db_op(currentStep, rank, std::move(vm), name, std::move(blobInfo));
        client.Mdm_insertRoot(DomainId::GetLocal(), db_op);
     metadata_time_PutDeferred.print_csv();
-
+    coeus_DoPutDeferred_metadata_time.print_csv();
 }
 
 
