@@ -537,7 +537,7 @@ template<typename T>
 void HermesEngine::DoPutSync_(const adios2::core::Variable<T> &variable,
                               const T *values) {
     Timer coeus_DoPutSync_hermes_time("coeus_DoPutSync_hermes_time" + variable.m_Name , true);
-
+  std::cout << "Put sync started" << std::endl;
   std::string name = variable.m_Name;
   Hermes->bkt->Put(name, variable.SelectionSize() * sizeof(T), values);
     coeus_DoPutSync_hermes_time.print_csv();
