@@ -318,24 +318,26 @@ int main(int argc, char *argv[])
                       << " Shape: (" << concatenateVectorToString(var_v_in.Shape()) << ") "
                       << std::endl;
         }
+        std::cout << "flag: 1 " std::endl;
         reader.Get<double>(var_u_in, u);
         reader.Get<double>(var_v_in, v);
+        std::cout << "flag: 2 " std::endl;
         if (shouldIWrite)
         {
             std::cout << "Get step: " << rank << std::endl;
             reader.Get<int>(var_step_in, &simStep);
         }
-
+        std::cout << "flag: 3 " std::endl;
         // End read step (let resources about step go)
         reader.EndStep();
-
+        std::cout << "flag: 4 " std::endl;
         if (!rank)
         {
             std::cout << "PDF Analysis step " << stepAnalysis
                       << " processing sim output step " << stepSimOut
                       << " sim compute step " << simStep << std::endl;
         }
-
+        std::cout << "flag: 5 " std::endl;
         // Calculate min/max of arrays
         std::pair<double, double> minmax_u;
         std::pair<double, double> minmax_v;
@@ -343,7 +345,7 @@ int main(int argc, char *argv[])
         minmax_u = std::make_pair(*mmu.first, *mmu.second);
         auto mmv = std::minmax_element(v.begin(), v.end());
         minmax_v = std::make_pair(*mmv.first, *mmv.second);
-
+        std::cout << "flag: 6 " std::endl;
         // Compute PDF
         std::vector<double> pdf_u;
         std::vector<double> bins_u;
@@ -356,9 +358,11 @@ int main(int argc, char *argv[])
                     minmax_v.second, pdf_v, bins_v);
 
 //     write U, V, and their norms out
+        std::cout << "flag: 7 " std::endl;
         writer.BeginStep();
         writer.Put<double>(var_u_pdf, pdf_u.data());
         writer.Put<double>(var_v_pdf, pdf_v.data());
+        std::cout << "flag:  8 " std::endl;
         if (shouldIWrite)
         {
             writer.Put<double>(var_u_bins, bins_u.data());
@@ -372,6 +376,7 @@ int main(int argc, char *argv[])
         }
         writer.EndStep();
         ++stepAnalysis;
+        std::cout << "flag: 9" std::endl;
     }
 
     // cleanup (close reader and writer)
