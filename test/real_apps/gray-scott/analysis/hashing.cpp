@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
         Timer gs_hashing_get_variable_u("gs_hashing_get_variable_u" , true);
 
         //reader.Get<double>(var_u_in, u, adios2::Mode::Sync);
-        reader.Get<double>(var_u_in, u, );
+        reader.Get<double>(var_u_in, u);
 
         gs_hashing_get_variable_u.print_csv();
         Timer gs_hashing_get_variable_v("gs_hashing_get_variable_v" , true);
