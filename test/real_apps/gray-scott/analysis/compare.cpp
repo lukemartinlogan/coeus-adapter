@@ -201,16 +201,28 @@ int main(int argc, char *argv[])
         auto varhash_V_2 = reader2_io.InquireVariable<uint8_t>("derive/hashV");
         gs_compare_inquire_variable.print_csv();
         Timer gs_compare_inquire_variable_U_1("gs_compare_inquire_variable_U_1" , true);
-        reader.Get(varhash_U_1, readHashU_1, adios2::Mode::Sync);
+
+        //reader.Get(varhash_U_1, readHashU_1, adios2::Mode::Sync);
+        reader.Get(varhash_U_1, readHashU_1);
+
         gs_compare_inquire_variable_U_1.print_csv();
         Timer gs_compare_inquire_variable_V_1("gs_compare_inquire_variable_V_1" , true);
-        reader.Get(varhash_V_1, readHashV_1, adios2::Mode::Sync);
+
+        //reader.Get(varhash_V_1, readHashV_1, adios2::Mode::Sync);
+        reader.Get(varhash_V_1, readHashV_1);
+
         gs_compare_inquire_variable_V_1.print_csv();
         Timer gs_compare_inquire_variable_U_2("gs_compare_inquire_variable_U_2" , true);
-        reader_2.Get(varhash_U_2, readHashV_2, adios2::Mode::Sync);
+
+       // reader_2.Get(varhash_U_2, readHashV_2, adios2::Mode::Sync);
+        reader_2.Get(varhash_U_2, readHashV_2);
+
         gs_compare_inquire_variable_U_2.print_csv();
         Timer gs_compare_inquire_variable_V_2("gs_compare_inquire_variable_V_2" , true);
-        reader_2.Get(varhash_V_2, readHashU_2, adios2::Mode::Sync);
+
+        //reader_2.Get(varhash_V_2, readHashU_2, adios2::Mode::Sync);
+        reader_2.Get(varhash_V_2, readHashU_2);
+
         gs_compare_inquire_variable_V_2.print_csv();
         // compare the hash value
         Timer gs_compare_hashing_code_compare("gs_compare_hashing_code_compare" , true);

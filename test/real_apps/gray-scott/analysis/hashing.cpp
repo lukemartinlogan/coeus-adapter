@@ -179,10 +179,17 @@ int main(int argc, char *argv[])
 
         // Read adios2 data
         Timer gs_hashing_get_variable_u("gs_hashing_get_variable_u" , true);
-        reader.Get<double>(var_u_in, u, adios2::Mode::Sync);
+
+        //reader.Get<double>(var_u_in, u, adios2::Mode::Sync);
+        reader.Get<double>(var_u_in, u, );
+
         gs_hashing_get_variable_u.print_csv();
         Timer gs_hashing_get_variable_v("gs_hashing_get_variable_v" , true);
+
+        //reader.Get<double>(var_v_in, v, adios2::Mode::Sync);
         reader.Get<double>(var_v_in, v);
+
+
         //reader.Get<double>(var_v_in, v, adios2::Mode::Sync);
         gs_hashing_get_variable_v.print_csv();
         std::cout << "Get U: " << rank << " size: " << u.size()
