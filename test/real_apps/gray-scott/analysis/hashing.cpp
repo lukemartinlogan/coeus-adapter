@@ -180,14 +180,14 @@ int main(int argc, char *argv[])
         // Read adios2 data
         Timer gs_hashing_get_variable_u("gs_hashing_get_variable_u" , true);
 
-        //reader.Get<double>(var_u_in, u, adios2::Mode::Sync);
-        reader.Get<double>(var_u_in, u);
+        reader.Get<double>(var_u_in, u, adios2::Mode::Sync);
+        //reader.Get<double>(var_u_in, u);
 
         gs_hashing_get_variable_u.print_csv();
         Timer gs_hashing_get_variable_v("gs_hashing_get_variable_v" , true);
 
-        //reader.Get<double>(var_v_in, v, adios2::Mode::Sync);
-        reader.Get<double>(var_v_in, v);
+        reader.Get<double>(var_v_in, v, adios2::Mode::Sync);
+        //reader.Get<double>(var_v_in, v);
 
 
         //reader.Get<double>(var_v_in, v, adios2::Mode::Sync);
@@ -221,12 +221,16 @@ int main(int argc, char *argv[])
         writer.BeginStep();
         gs_hashing_writer_beginStep.print_csv();
         Timer gs_hashing_writer_put_u("gs_hashing_writer_put_u" , true);
-        writer.Put<double>(var_u_out, u.data());
-        //writer.Put<double>(var_u_out, u.data(), adios2::Mode::Sync);
+
+        //writer.Put<double>(var_u_out, u.data());
+        writer.Put<double>(var_u_out, u.data(), adios2::Mode::Sync);
+
         gs_hashing_writer_put_u.print_csv();
         Timer gs_hashing_writer_put_v("gs_hashing_writer_put_v" , true);
-        //writer.Put<double>(var_v_out, v.data(), adios2::Mode::Sync);
-        writer.Put<double>(var_v_out, v.data());
+
+        writer.Put<double>(var_v_out, v.data(), adios2::Mode::Sync);
+        //writer.Put<double>(var_v_out, v.data());
+
         gs_hashing_writer_put_v.print_csv();
         Timer gs_hashing_writer_endstep("gs_hashing_writer_endstep" , true);
         writer.EndStep();
