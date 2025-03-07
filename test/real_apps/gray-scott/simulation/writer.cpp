@@ -207,13 +207,13 @@ void Writer::write(int step, const GrayScott &sim, int rank)
 
         //writer.Put<int>(var_step, &step);
         writer.Put<int>(var_step, &step, adios2::Mode::Sync);
-
+        writer.Flush();
         gs_put_steps.print_csv();
         Timer gs_put_variables_u("gs_put_variables_u", true);
 
         //writer.Put<double>(var_u, u.data());
         writer.Put<double>(var_u, u.data(), adios2::Mode::Sync);
-
+        writer.Flush();
         gs_put_variables_u.print_csv();
         Timer gs_put_variables_v("gs_put_variables_v", true);
 
@@ -221,7 +221,7 @@ void Writer::write(int step, const GrayScott &sim, int rank)
         //writer.Put<double>(var_v, v.data());
         writer.Put<double>(var_v, v.data(), adios2::Mode::Sync);
 
-
+        writer.Flush();
         gs_put_variables_v.print_csv();
         Timer gs_endstep("gs_endstep", true);
         writer.EndStep();
