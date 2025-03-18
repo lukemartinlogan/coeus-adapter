@@ -10,17 +10,18 @@
  * have access to the file, you may request a copy from help@hdfgroup.org.   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "hrun_admin/hrun_admin.h"
-#include "hrun/api/hrun_runtime.h"
 #include "coeus_mdm/coeus_mdm.h"
 
+#include "CHI_ADMIN/CHI_ADMIN.h"
 #include "common/SQlite.h"
+#include "hrun/api/hrun_runtime.h"
 
 namespace hrun::coeus_mdm {
 
 class Server : public TaskLib {
-private:
+ private:
   std::unique_ptr<SQLiteWrapper> db;
+
  public:
   Server() = default;
 
@@ -30,43 +31,39 @@ private:
     task->SetModuleComplete();
   }
 
-
-
   void Destruct(DestructTask *task, RunContext &rctx) {
     task->SetModuleComplete();
   }
-
-
 
   void Mdm_insert(Mdm_insertTask *task, RunContext &rctx) {
     DbOperation db_op = task->GetDbOp();
 
     if (db_op.type == OperationType::InsertData) {
-
       db->InsertVariableMetadata(db_op.step, db_op.rank, db_op.metadata);
-      db->InsertBlobLocation(db_op.step, db_op.rank, db_op.name, db_op.blobInfo);
+      db->InsertBlobLocation(db_op.step, db_op.rank, db_op.name,
+                             db_op.blobInfo);
 
     } else if (db_op.type == OperationType::UpdateSteps) {
       db->UpdateTotalSteps(db_op.uid, db_op.currentStep);
 
-    }
-    else if (db_op.type == OperationType::InsertDerivedData){
+    } else if (db_op.type == OperationType::InsertDerivedData) {
       db->InsertVariableMetadata(db_op.step, db_op.rank, db_op.metadata);
-      db->InsertBlobLocation(db_op.step, db_op.rank, db_op.name, db_op.blobInfo);\
-      db->insertOrUpdateDerivedQuantity(db_op.step, db_op.name, "min",
-                                        db_op.blobInfo.blob_name, db_op.blobInfo.bucket_name,
-                                        db_op.derived_semantics.min_value);
-      db->insertOrUpdateDerivedQuantity(db_op.step, db_op.name, "max",
-                                        db_op.blobInfo.blob_name, db_op.blobInfo.bucket_name,
-                                        db_op.derived_semantics.max_value);
+      db->InsertBlobLocation(db_op.step, db_op.rank, db_op.name,
+                             db_op.blobInfo);
+      db->insertOrUpdateDerivedQuantity(
+          db_op.step, db_op.name, "min", db_op.blobInfo.blob_name,
+          db_op.blobInfo.bucket_name, db_op.derived_semantics.min_value);
+      db->insertOrUpdateDerivedQuantity(
+          db_op.step, db_op.name, "max", db_op.blobInfo.blob_name,
+          db_op.blobInfo.bucket_name, db_op.derived_semantics.max_value);
     }
-//int step, const std::string& variable,
-//                                     const std::string& operation, const std::string& blob_name,
-//                                     const std::string& bucket_name, float value
+    // int step, const std::string& variable,
+    //                                      const std::string& operation, const
+    //                                      std::string& blob_name, const
+    //                                      std::string& bucket_name, float
+    //                                      value
     task->SetModuleComplete();
   }
-
-
 
  public:
 #include "coeus_mdm/coeus_mdm_lib_exec.h"

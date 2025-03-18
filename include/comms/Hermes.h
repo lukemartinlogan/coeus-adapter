@@ -13,9 +13,9 @@
 #ifndef COEUS_INCLUDE_COMMS_HERMES_H_
 #define COEUS_INCLUDE_COMMS_HERMES_H_
 
-#include "interfaces/IHermes.h"
 #include "Bucket.h"
 #include "common/Tracer.h"
+#include "interfaces/IHermes.h"
 
 namespace coeus {
 class Hermes : public IHermes {
@@ -26,29 +26,26 @@ class Hermes : public IHermes {
   Hermes() = default;
 
   bool connect() override {
-
-
     std::cout << "Entering connect" << std::endl;
     std::cout << "HERMES_CONF: " << getenv("HERMES_CONF") << std::endl;
 
     TRANSPARENT_HERMES();
     hermes = HERMES;
-    HRUN_ADMIN->RegisterTaskLibRoot(hrun::DomainId::GetGlobal(), "coeus_mdm");
+    CHI_ADMIN->RegisterTaskLib(hrun::DomainQuery::GetGlobal(), "coeus_mdm");
 
-    HRUN_ADMIN->RegisterTaskLibRoot(hrun::DomainId::GetLocal(), "rankConsensus");
+    CHI_ADMIN->RegisterTaskLib(hrun::DomainQuery::GetLocalHash(0),
+                               "rankConsensus");
     std::cout << "Registered task" << std::endl;
     return hermes->IsInitialized();
   };
 
-    bool GetBucket(const std::string &bucket_name) override {
-
-    bkt = (IBucket*) new coeus::Bucket(bucket_name, this);
+  bool GetBucket(const std::string &bucket_name) override {
+    bkt = (IBucket *)new coeus::Bucket(bucket_name, this);
     return true;
   }
 
-  bool Demote(const std::string &bucket_name, const std::string &blob_name) override {
-
-
+  bool Demote(const std::string &bucket_name,
+              const std::string &blob_name) override {
     hapi::Context ctx;
     auto bkt = hermes->GetBucket(bucket_name);
 
@@ -58,8 +55,8 @@ class Hermes : public IHermes {
     bkt.ReorganizeBlob(blob_id, blob_score + demote_weight, blob_score, ctx);
   }
 
-  bool Prefetch(const std::string &bucket_name, const std::string &blob_name) override {
-
+  bool Prefetch(const std::string &bucket_name,
+                const std::string &blob_name) override {
     hapi::Context ctx;
     auto bkt = hermes->GetBucket(bucket_name);
 
@@ -70,5 +67,5 @@ class Hermes : public IHermes {
   }
 };
 
-}
-#endif //COEUS_INCLUDE_COMMS_HERMES_H_
+}  // namespace coeus
+#endif  // COEUS_INCLUDE_COMMS_HERMES_H_

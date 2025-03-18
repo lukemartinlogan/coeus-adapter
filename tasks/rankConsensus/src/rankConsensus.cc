@@ -10,9 +10,11 @@
  * have access to the file, you may request a copy from help@hdfgroup.org.   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "hrun_admin/hrun_admin.h"
-#include "hrun/api/hrun_runtime.h"
 #include "rankConsensus/rankConsensus.h"
+
+#include "CHI_ADMIN/CHI_ADMIN.h"
+#include "hrun/api/hrun_runtime.h"
+
 
 namespace hrun::rankConsensus {
 
@@ -25,24 +27,22 @@ class Server : public TaskLib {
     rank_count = 0;
     task->SetModuleComplete();
   }
-  void MonitorConstruct(u32 mode, ConstructTask *task, RunContext &rctx) {
-  }
+  void MonitorConstruct(u32 mode, ConstructTask *task, RunContext &rctx) {}
 
   /** Destroy rankConsensus */
   void Destruct(DestructTask *task, RunContext &rctx) {
     task->SetModuleComplete();
   }
-  void MonitorDestruct(u32 mode, DestructTask *task, RunContext &rctx) {
-  }
+  void MonitorDestruct(u32 mode, DestructTask *task, RunContext &rctx) {}
 
   /** A custom method */
   void GetRank(GetRankTask *task, RunContext &rctx) {
     task->rank_ = rank_count.fetch_add(1);
-    //std::cout << "out " << task->rank_ << std::endl;
+    // std::cout << "out " << task->rank_ << std::endl;
     task->SetModuleComplete();
   }
-  void MonitorGetRank(u32 mode, GetRankTask *task, RunContext &rctx) {
-  }
+  void MonitorGetRank(u32 mode, GetRankTask *task, RunContext &rctx) {}
+
  public:
 #include "rankConsensus/rankConsensus_lib_exec.h"
 };

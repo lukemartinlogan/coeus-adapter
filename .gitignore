@@ -11,7 +11,9 @@ cmake*
 *.o.cmd
 *.o.d
 build
+*.env.cmake
 
+CMakePresets.json
 build/
 benchmarks/HermesVFD
 
