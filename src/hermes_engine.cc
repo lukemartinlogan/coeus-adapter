@@ -85,104 +85,107 @@ void HermesEngine::Init_() {
   meta_logger_get->info(
       "Name, shape, start, Count, Constant Shape, Time, selectionSize, "
       "sizeofVariable, ShapeID, steps, stepstart, blockID");
+      "\nName, shape, start, Count, Constant Shape, Time, selectionSize, sizeofVariable\n ShapeID, steps, stepstart, blockID, blob_name, bucket_name, processor, process");
 
-  auto file_sink3 = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-      "logs/metadataCollect_put.txt", true);
-  file_sink3->set_level(spdlog::level::trace);
-  file_sink3->set_pattern("%v");
-  spdlog::logger logger3("metadata_logger_put", {file_sink3});
-  logger3.set_level(spdlog::level::trace);
-  meta_logger_put = std::make_shared<spdlog::logger>(logger3);
-  meta_logger_put->info(
-      "Name, shape, start, Count, Constant Shape, Time, selectionSize, "
-      "sizeofVariable, ShapeID, steps, stepstart, blockID");
+      auto file_sink3 = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+          "logs/metadataCollect_put.txt", true);
+      file_sink3->set_level(spdlog::level::trace);
+      file_sink3->set_pattern("%v");
+      spdlog::logger logger3("metadata_logger_put", {file_sink3});
+      logger3.set_level(spdlog::level::trace);
+      meta_logger_put = std::make_shared<spdlog::logger>(logger3);
+      meta_logger_put->info(
+          "Name, shape, start, Count, Constant Shape, Time, selectionSize, "
+          "sizeofVariable, ShapeID, steps, stepstart, blockID");
+      "\nName, shape, start, Count, Constant Shape, Time, selectionSize, sizeofVariable, \nShapeID, steps, stepstart, blockID, blob_name, bucket_name, processor, process");
 #endif
 
-  // Merge Log
+      // Merge Log
 
-  spdlog::logger logger("debug_logger", {console_sink, file_sink});
-  logger.set_level(spdlog::level::debug);
-  engine_logger = std::make_shared<spdlog::logger>(logger);
+      spdlog::logger logger("debug_logger", {console_sink, file_sink});
+      logger.set_level(spdlog::level::debug);
+      engine_logger = std::make_shared<spdlog::logger>(logger);
 
-  // hermes setup
-  if (!Hermes->connect()) {
-    engine_logger->warn("Could not connect to Hermes", rank);
-    throw coeus::common::ErrorException(HERMES_CONNECT_FAILED);
-  }
-  if (rank == 0) std::cout << "Connected to Hermes" << std::endl;
+      // hermes setup
+      if (!Hermes->connect()) {
+        engine_logger->warn("Could not connect to Hermes", rank);
+        throw coeus::common::ErrorException(HERMES_CONNECT_FAILED);
+      }
+      if (rank == 0) std::cout << "Connected to Hermes" << std::endl;
 
-  // add rank with consensus
-  rank_consensus.Create(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0),
-                        chi::DomainQuery::GetLocalHash(0), "rankConsensus");
-  rank = rank_consensus.GetRank(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0));
-  const size_t bufferSize = 1024;  // Define the buffer size
-  char buffer[bufferSize];         // Create a buffer to hold the hostname
-  // Get the hostname
+      // add rank with consensus
+      rank_consensus.Create(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0),
+                            chi::DomainQuery::GetLocalHash(0), "rankConsensus");
+      rank =
+          rank_consensus.GetRank(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0));
+      const size_t bufferSize = 1024;  // Define the buffer size
+      char buffer[bufferSize];         // Create a buffer to hold the hostname
+      // Get the hostname
 
-  comm_size = m_Comm.Size();
-  pid_t processId = getpid();
+      comm_size = m_Comm.Size();
+      pid_t processId = getpid();
 
-  // Identifier, should be the file, but we don't get it
-  uid = this->m_IO.m_Name;
+      // Identifier, should be the file, but we don't get it
+      uid = this->m_IO.m_Name;
 
-  // Configuration Setup through the Adios xml configuration
-  auto params = m_IO.m_Parameters;
-  if (params.find("OPFile") != params.end()) {
-    std::string opFile = params["OPFile"];
-    if (rank == 0) std::cout << "OPFile: " << opFile << std::endl;
-    try {
-      operationMap = YAMLParser(opFile).parse();
-    } catch (std::exception &e) {
-      engine_logger->warn("Could not parse operation file", rank);
-      throw e;
-    }
-  }
-  if (params.find("ppn") != params.end()) {
-    ppn = stoi(params["ppn"]);
-    if (rank == 0) std::cout << "PPN: " << ppn << std::endl;
-  }
+      // Configuration Setup through the Adios xml configuration
+      auto params = m_IO.m_Parameters;
+      if (params.find("OPFile") != params.end()) {
+        std::string opFile = params["OPFile"];
+        if (rank == 0) std::cout << "OPFile: " << opFile << std::endl;
+        try {
+          operationMap = YAMLParser(opFile).parse();
+        } catch (std::exception &e) {
+          engine_logger->warn("Could not parse operation file", rank);
+          throw e;
+        }
+      }
+      if (params.find("ppn") != params.end()) {
+        ppn = stoi(params["ppn"]);
+        if (rank == 0) std::cout << "PPN: " << ppn << std::endl;
+      }
 
-  if (params.find("limit") != params.end()) {
-    limit = stoi(params["limit"]);
-    if (rank == 0) std::cout << "limit: " << limit << std::endl;
-  }
+      if (params.find("limit") != params.end()) {
+        limit = stoi(params["limit"]);
+        if (rank == 0) std::cout << "limit: " << limit << std::endl;
+      }
 
-  if (params.find("lookahead") != params.end()) {
-    lookahead = stoi(params["lookahead"]);
-    if (rank == 0) std::cout << "lookahead: " << lookahead << std::endl;
-  } else {
-    lookahead = 2;
-  }
+      if (params.find("lookahead") != params.end()) {
+        lookahead = stoi(params["lookahead"]);
+        if (rank == 0) std::cout << "lookahead: " << lookahead << std::endl;
+      } else {
+        lookahead = 2;
+      }
 
-  if (params.find("VarFile") != params.end()) {
-    std::string varFile = params["VarFile"];
-    if (rank == 0) std::cout << "varFile: " << varFile << std::endl;
-    try {
-      variableMap = YAMLParser(varFile).parse();
-    } catch (std::exception &e) {
-      engine_logger->warn("Could not parse variable file", rank);
-      throw e;
-    }
-  }
+      if (params.find("VarFile") != params.end()) {
+        std::string varFile = params["VarFile"];
+        if (rank == 0) std::cout << "varFile: " << varFile << std::endl;
+        try {
+          variableMap = YAMLParser(varFile).parse();
+        } catch (std::exception &e) {
+          engine_logger->warn("Could not parse variable file", rank);
+          throw e;
+        }
+      }
 
-  // Hermes setup
+      // Hermes setup
 
-  if (params.find("db_file") != params.end()) {
-    db_file = params["db_file"];
-    db = new SQLiteWrapper(db_file);
-    client.Create(HSHM_MCTX, chi::DomainQuery::GetGlobalBcast(),
-                  chi::DomainQuery::GetGlobalBcast(), "db_operation",
-                  chi::CreateContext(), db_file);
-    if (rank % ppn == 0) {
-      db->createTables();
-    }
-  } else {
-    throw std::invalid_argument("db_file not found in parameters");
-  }
-  if (params.find("execution_order") != params.end()) {
-    adiosOutput = params["execution_order"];
-  }
-  open = true;
+      if (params.find("db_file") != params.end()) {
+        db_file = params["db_file"];
+        db = new SQLiteWrapper(db_file);
+        client.Create(HSHM_MCTX, chi::DomainQuery::GetGlobalBcast(),
+                      chi::DomainQuery::GetGlobalBcast(), "db_operation",
+                      chi::CreateContext(), db_file);
+        if (rank % ppn == 0) {
+          db->createTables();
+        }
+      } else {
+        throw std::invalid_argument("db_file not found in parameters");
+      }
+      if (params.find("execution_order") != params.end()) {
+        adiosOutput = params["execution_order"];
+      }
+      open = true;
 }
 
 /**
@@ -505,12 +508,6 @@ void HermesEngine::DoPutSync_(const adios2::core::Variable<T> &variable,
 
   std::string name = variable.m_Name;
   Hermes->bkt->Put(name, variable.SelectionSize() * sizeof(T), values);
-
-#ifdef Meta_enabled
-  metaInfo metaInfo(variable, adiosOpType::put);
-  meta_logger_put->info("metadata: {}", metaInfoToString(metaInfo));
-
-#endif
   // database
   VariableMetadata vm(variable.m_Name, variable.m_Shape, variable.m_Start,
                       variable.m_Count, variable.IsConstantDims(), true,
@@ -527,10 +524,6 @@ void HermesEngine::DoPutDeferred_(const adios2::core::Variable<T> &variable,
   std::string name = variable.m_Name;
 
   Hermes->bkt->Put(name, variable.SelectionSize() * sizeof(T), values);
-#ifdef Meta_enabled
-  metaInfo metaInfo(variable, adiosOpType::put);
-  meta_logger_put->info("metadata: {}", metaInfoToString(metaInfo));
-#endif
   // database
   VariableMetadata vm(variable.m_Name, variable.m_Shape, variable.m_Start,
                       variable.m_Count, variable.IsConstantDims(), true,
