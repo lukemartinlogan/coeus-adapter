@@ -1,5 +1,0 @@
-MESSAGE(STATUS "cereal: true")
-find_package(Threads REQUIRED)
-add_library(cereal INTERFACE)
-target_include_directories(cereal INTERFACE include)
-target_link_libraries(cereal INTERFACE Threads::Threads)

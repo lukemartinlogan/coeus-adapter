@@ -1,0 +1,116 @@
+
+/** The CreateTask task */
+struct CreateTask : public Task, TaskFlags<TF_SRL_SYM> {
+  /** SHM default constructor */
+  HSHM_INLINE explicit
+  CreateTask(const hipc::CtxAllocator<CHI_ALLOC_T> &alloc) : Task(alloc) {}
+
+  /** Emplace constructor */
+  HSHM_INLINE explicit
+  CreateTask(const hipc::CtxAllocator<CHI_ALLOC_T> &alloc,
+                const TaskNode &task_node,
+                const PoolId &pool_id,
+                const DomainQuery &dom_query) : Task(alloc) {
+    // Initialize task
+    task_node_ = task_node;
+    prio_ = TaskPrioOpt::kLowLatency;
+    pool_ = pool_id;
+    method_ = Method::kCreate;
+    task_flags_.SetBits(0);
+    dom_query_ = dom_query;
+
+    // Custom
+  }
+
+  /** Duplicate message */
+  void CopyStart(const CreateTask &other, bool deep) {
+  }
+
+  /** (De)serialize message call */
+  template<typename Ar>
+  void SerializeStart(Ar &ar) {
+  }
+
+  /** (De)serialize message return */
+  template<typename Ar>
+  void SerializeEnd(Ar &ar) {
+  }
+};
+
+
+/** The DestroyTask task */
+struct DestroyTask : public Task, TaskFlags<TF_SRL_SYM> {
+  /** SHM default constructor */
+  HSHM_INLINE explicit
+  DestroyTask(const hipc::CtxAllocator<CHI_ALLOC_T> &alloc) : Task(alloc) {}
+
+  /** Emplace constructor */
+  HSHM_INLINE explicit
+  DestroyTask(const hipc::CtxAllocator<CHI_ALLOC_T> &alloc,
+                const TaskNode &task_node,
+                const PoolId &pool_id,
+                const DomainQuery &dom_query) : Task(alloc) {
+    // Initialize task
+    task_node_ = task_node;
+    prio_ = TaskPrioOpt::kLowLatency;
+    pool_ = pool_id;
+    method_ = Method::kDestroy;
+    task_flags_.SetBits(0);
+    dom_query_ = dom_query;
+
+    // Custom
+  }
+
+  /** Duplicate message */
+  void CopyStart(const DestroyTask &other, bool deep) {
+  }
+
+  /** (De)serialize message call */
+  template<typename Ar>
+  void SerializeStart(Ar &ar) {
+  }
+
+  /** (De)serialize message return */
+  template<typename Ar>
+  void SerializeEnd(Ar &ar) {
+  }
+};
+
+
+/** The GetRankTask task */
+struct GetRankTask : public Task, TaskFlags<TF_SRL_SYM> {
+  /** SHM default constructor */
+  HSHM_INLINE explicit
+  GetRankTask(const hipc::CtxAllocator<CHI_ALLOC_T> &alloc) : Task(alloc) {}
+
+  /** Emplace constructor */
+  HSHM_INLINE explicit
+  GetRankTask(const hipc::CtxAllocator<CHI_ALLOC_T> &alloc,
+                const TaskNode &task_node,
+                const PoolId &pool_id,
+                const DomainQuery &dom_query) : Task(alloc) {
+    // Initialize task
+    task_node_ = task_node;
+    prio_ = TaskPrioOpt::kLowLatency;
+    pool_ = pool_id;
+    method_ = Method::kGetRank;
+    task_flags_.SetBits(0);
+    dom_query_ = dom_query;
+
+    // Custom
+  }
+
+  /** Duplicate message */
+  void CopyStart(const GetRankTask &other, bool deep) {
+  }
+
+  /** (De)serialize message call */
+  template<typename Ar>
+  void SerializeStart(Ar &ar) {
+  }
+
+  /** (De)serialize message return */
+  template<typename Ar>
+  void SerializeEnd(Ar &ar) {
+  }
+};

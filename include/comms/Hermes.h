@@ -31,10 +31,11 @@ class Hermes : public IHermes {
 
     TRANSPARENT_HERMES();
     hermes = HERMES;
-    CHI_ADMIN->RegisterTaskLib(hrun::DomainQuery::GetGlobal(), "coeus_mdm");
+    CHI_ADMIN->RegisterModule(HSHM_MCTX, chi::DomainQuery::GetGlobalBcast(),
+                              "coeus_mdm");
 
-    CHI_ADMIN->RegisterTaskLib(hrun::DomainQuery::GetLocalHash(0),
-                               "rankConsensus");
+    CHI_ADMIN->RegisterModule(HSHM_MCTX, chi::DomainQuery::GetGlobalBcast(),
+                              "rankConsensus");
     std::cout << "Registered task" << std::endl;
     return hermes->IsInitialized();
   };
@@ -47,23 +48,25 @@ class Hermes : public IHermes {
   bool Demote(const std::string &bucket_name,
               const std::string &blob_name) override {
     hapi::Context ctx;
-    auto bkt = hermes->GetBucket(bucket_name);
+    hermes::Bucket bkt(bucket_name);
 
     hermes::BlobId blob_id = bkt.GetBlobId(blob_name);
     float blob_score = bkt.GetBlobScore(blob_id);
 
     bkt.ReorganizeBlob(blob_id, blob_score + demote_weight, blob_score, ctx);
+    return true;
   }
 
   bool Prefetch(const std::string &bucket_name,
                 const std::string &blob_name) override {
     hapi::Context ctx;
-    auto bkt = hermes->GetBucket(bucket_name);
+    hermes::Bucket bkt(bucket_name);
 
     hermes::BlobId blob_id = bkt.GetBlobId(blob_name);
     float blob_score = bkt.GetBlobScore(blob_id);
 
     bkt.ReorganizeBlob(blob_id, 1, blob_score + promote_weight, ctx);
+    return true;
   }
 };
 

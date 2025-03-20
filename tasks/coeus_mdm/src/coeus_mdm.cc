@@ -9,32 +9,44 @@
  * the COPYING file, which can be found at the top directory. If you do not  *
  * have access to the file, you may request a copy from help@hdfgroup.org.   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
 #include "coeus_mdm/coeus_mdm.h"
 
-#include "CHI_ADMIN/CHI_ADMIN.h"
+#include "chimaera/api/chimaera_runtime.h"
+#include "chimaera/monitor/monitor.h"
+#include "chimaera_admin/chimaera_admin.h"
 #include "common/SQlite.h"
-#include "hrun/api/hrun_runtime.h"
 
-namespace hrun::coeus_mdm {
+namespace chi::coeus_mdm {
 
-class Server : public TaskLib {
- private:
+class Server : public Module {
+ public:
   std::unique_ptr<SQLiteWrapper> db;
+  CLS_CONST LaneGroupId kDefaultGroup = 0;
 
  public:
   Server() = default;
 
-  void Construct(ConstructTask *task, RunContext &rctx) {
-    task->Deserialize();
-    db = std::make_unique<SQLiteWrapper>(task->db_path_->str());
-    task->SetModuleComplete();
+  /** Construct coeus_mdm */
+  void Create(CreateTask *task, RunContext &rctx) {
+    // Create a set of lanes for holding tasks
+    CreateLaneGroup(kDefaultGroup, 1, QUEUE_LOW_LATENCY);
+  }
+  void MonitorCreate(MonitorModeId mode, CreateTask *task, RunContext &rctx) {}
+
+  /** Route a task to a lane */
+  Lane *MapTaskToLane(const Task *task) override {
+    // Route tasks to lanes based on their properties
+    // E.g., a strongly consistent filesystem could map tasks to a lane
+    // by the hash of an absolute filename path.
+    return GetLaneByHash(kDefaultGroup, task->prio_, 0);
   }
 
-  void Destruct(DestructTask *task, RunContext &rctx) {
-    task->SetModuleComplete();
+  /** Destroy coeus_mdm */
+  void Destroy(DestroyTask *task, RunContext &rctx) {}
+  void MonitorDestroy(MonitorModeId mode, DestroyTask *task, RunContext &rctx) {
   }
 
+  /** The Mdm_insert method */
   void Mdm_insert(Mdm_insertTask *task, RunContext &rctx) {
     DbOperation db_op = task->GetDbOp();
 
@@ -62,13 +74,20 @@ class Server : public TaskLib {
     //                                      std::string& blob_name, const
     //                                      std::string& bucket_name, float
     //                                      value
-    task->SetModuleComplete();
+  }
+  void MonitorMdm_insert(MonitorModeId mode, Mdm_insertTask *task,
+                         RunContext &rctx) {
+    switch (mode) {
+      case MonitorMode::kReplicaAgg: {
+        std::vector<FullPtr<Task>> &replicas = *rctx.replicas_;
+      }
+    }
   }
 
  public:
 #include "coeus_mdm/coeus_mdm_lib_exec.h"
 };
 
-}  // namespace hrun::coeus_mdm
+}  // namespace chi::coeus_mdm
 
-HRUN_TASK_CC(hrun::coeus_mdm::Server, "coeus_mdm");
+CHI_TASK_CC(chi::coeus_mdm::Server, "coeus_mdm");

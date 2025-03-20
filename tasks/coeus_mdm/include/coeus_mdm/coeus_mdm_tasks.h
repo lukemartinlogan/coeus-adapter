@@ -2,134 +2,93 @@
 // Created by lukemartinlogan on 8/11/23.
 //
 
-#ifndef HRUN_TASKS_TASK_TEMPL_INCLUDE_coeus_mdm_coeus_mdm_TASKS_H_
-#define HRUN_TASKS_TASK_TEMPL_INCLUDE_coeus_mdm_coeus_mdm_TASKS_H_
+#ifndef CHI_TASKS_TASK_TEMPL_INCLUDE_coeus_mdm_coeus_mdm_TASKS_H_
+#define CHI_TASKS_TASK_TEMPL_INCLUDE_coeus_mdm_coeus_mdm_TASKS_H_
 
-#include "CHI_ADMIN/CHI_ADMIN.h"
+#include "chimaera/chimaera_namespace.h"
 #include "common/DbOperation.h"
-#include "hrun/api/hrun_client.h"
-#include "hrun/queue_manager/queue_manager_client.h"
-#include "hrun/task_registry/task_lib.h"
-#include "proc_queue/proc_queue.h"
 
-namespace hrun::coeus_mdm {
+namespace chi::coeus_mdm {
 
 #include "coeus_mdm_methods.h"
-#include "hrun/hrun_namespace.h"
-
-using hrun::proc_queue::PushTask;
-using hrun::proc_queue::TypedPushTask;
+CHI_NAMESPACE_INIT
 
 /**
  * A task to create coeus_mdm
  * */
-using hrun::Admin::CreateTaskStateTask;
-struct ConstructTask : public CreateTaskStateTask {
-  IN hipc::ShmArchive<hipc::string> db_path_;
-  /** SHM default constructor */
-  HSHM_ALWAYS_INLINE explicit ConstructTask(hipc::Allocator *alloc)
-      : CreateTaskStateTask(alloc) {}
+struct CreateTaskParams {
+  CLS_CONST char *lib_name_ = "coeus_mdm";
+  std::string db_file_;
 
-  /** Emplace constructor */
-  HSHM_ALWAYS_INLINE explicit ConstructTask(
-      hipc::Allocator *alloc, const TaskNode &task_node,
-      const DomainQuery &domain_id, const std::string &state_name,
-      const TaskStateId &id, const std::vector<PriorityInfo> &queue_info,
-      const std::string &db_path)
-      : CreateTaskStateTask(alloc, task_node, domain_id, state_name,
-                            "coeus_mdm", id, queue_info) {
-    // Custom params
+  HSHM_INLINE_CROSS_FUN
+  CreateTaskParams() = default;
 
-    HSHM_MAKE_AR(db_path_, alloc, db_path);
-    std::stringstream ss;
-    cereal::BinaryOutputArchive ar(ss);
-    ar(db_path_);
-    std::string data = ss.str();
-    *custom_ = data;
-  }
+  HSHM_INLINE_CROSS_FUN
+  CreateTaskParams(const hipc::CtxAllocator<CHI_ALLOC_T> &alloc,
+                   const std::string &db_file)
+      : db_file_(db_file) {}
 
-  void Deserialize() {
-    std::string data = custom_->str();
-    std::stringstream ss(data);
-    cereal::BinaryInputArchive ar(ss);
-    ar(db_path_);
-  }
-
-  HSHM_ALWAYS_INLINE
-  ~ConstructTask() {
-    // Custom params
+  template <typename Ar>
+  HSHM_INLINE_CROSS_FUN void serialize(Ar &ar) {
+    ar(db_file_);
   }
 };
+typedef chi::Admin::CreatePoolBaseTask<CreateTaskParams> CreateTask;
 
 /** A task to destroy coeus_mdm */
-using hrun::Admin::DestroyTaskStateTask;
-struct DestructTask : public DestroyTaskStateTask {
-  /** SHM default constructor */
-  HSHM_ALWAYS_INLINE explicit DestructTask(hipc::Allocator *alloc)
-      : DestroyTaskStateTask(alloc) {}
+typedef chi::Admin::DestroyContainerTask DestroyTask;
 
-  /** Emplace constructor */
-  HSHM_ALWAYS_INLINE explicit DestructTask(hipc::Allocator *alloc,
-                                           const TaskNode &task_node,
-                                           const DomainQuery &domain_id,
-                                           TaskStateId &state_id)
-      : DestroyTaskStateTask(alloc, task_node, domain_id, state_id) {}
-
-  /** Create group */
-  HSHM_ALWAYS_INLINE
-  u32 GetGroup(hshm::charbuf &group) { return TASK_UNORDERED; }
-};
-
-/**
- * A custom task in coeus_mdm
- * */
-struct Mdm_insertTask : public Task, TaskFlags<TF_LOCAL> {
-  IN hipc::ShmArchive<hipc::string> db_op_;
+/** The Mdm_insertTask task */
+struct Mdm_insertTask : public Task, TaskFlags<TF_SRL_SYM> {
+  IN hipc::string db_op_;
 
   /** SHM default constructor */
-  HSHM_ALWAYS_INLINE explicit Mdm_insertTask(hipc::Allocator *alloc)
-      : Task(alloc) {}
+  HSHM_INLINE explicit Mdm_insertTask(
+      const hipc::CtxAllocator<CHI_ALLOC_T> &alloc)
+      : Task(alloc), db_op_(alloc) {}
 
   /** Emplace constructor */
-  HSHM_ALWAYS_INLINE explicit Mdm_insertTask(hipc::Allocator *alloc,
-                                             const TaskNode &task_node,
-                                             const DomainQuery &domain_id,
-                                             const TaskStateId &state_id,
-                                             const DbOperation &db_op)
-      : Task(alloc) {
+  HSHM_INLINE explicit Mdm_insertTask(
+      const hipc::CtxAllocator<CHI_ALLOC_T> &alloc, const TaskNode &task_node,
+      const PoolId &pool_id, const DomainQuery &dom_query,
+      const DbOperation &db_op)
+      : Task(alloc), db_op_(alloc) {
     // Initialize task
-
     task_node_ = task_node;
-    lane_hash_ = 0;
-    prio_ = TaskPrio::kLowLatency;
-    task_state_ = state_id;
+    prio_ = TaskPrioOpt::kLowLatency;
+    pool_ = pool_id;
     method_ = Method::kMdm_insert;
     task_flags_.SetBits(TASK_FIRE_AND_FORGET);
-    domain_id_ = domain_id;
+    dom_query_ = dom_query;
 
-    // Store DbOperation
+    // Custom
     std::stringstream ss;
     cereal::BinaryOutputArchive ar(ss);
     ar << db_op;
     std::string db_op_ser = ss.str();
-    HSHM_MAKE_AR(db_op_, alloc, db_op_ser);
+    db_op_ = db_op_ser;
   }
-
-  ~Mdm_insertTask() { HSHM_DESTROY_AR(db_op_); }
 
   DbOperation GetDbOp() {
     DbOperation db_op;
-    std::stringstream ss(db_op_->str());
+    std::stringstream ss(db_op_.str());
     cereal::BinaryInputArchive ar(ss);
     ar >> db_op;
     return db_op;
   }
 
-  /** Create group */
-  HSHM_ALWAYS_INLINE
-  u32 GetGroup(hshm::charbuf &group) { return TASK_UNORDERED; }
+  /** Duplicate message */
+  void CopyStart(const Mdm_insertTask &other, bool deep) {}
+
+  /** (De)serialize message call */
+  template <typename Ar>
+  void SerializeStart(Ar &ar) {}
+
+  /** (De)serialize message return */
+  template <typename Ar>
+  void SerializeEnd(Ar &ar) {}
 };
 
-}  // namespace hrun::coeus_mdm
+}  // namespace chi::coeus_mdm
 
-#endif  // HRUN_TASKS_TASK_TEMPL_INCLUDE_coeus_mdm_coeus_mdm_TASKS_H_
+#endif  // CHI_TASKS_TASK_TEMPL_INCLUDE_coeus_mdm_coeus_mdm_TASKS_H_

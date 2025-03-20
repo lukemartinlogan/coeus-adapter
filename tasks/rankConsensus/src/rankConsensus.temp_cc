@@ -1,0 +1,35 @@
+
+  /** The Create method */
+  void Create(CreateTask *task, RunContext &rctx) {
+  }
+  void MonitorCreate(MonitorModeId mode, CreateTask *task, RunContext &rctx) {
+    switch (mode) {
+      case MonitorMode::kReplicaAgg: {
+        std::vector<FullPtr<Task>> &replicas = *rctx.replicas_;
+      }
+    }
+  }
+
+
+  /** The Destroy method */
+  void Destroy(DestroyTask *task, RunContext &rctx) {
+  }
+  void MonitorDestroy(MonitorModeId mode, DestroyTask *task, RunContext &rctx) {
+    switch (mode) {
+      case MonitorMode::kReplicaAgg: {
+        std::vector<FullPtr<Task>> &replicas = *rctx.replicas_;
+      }
+    }
+  }
+
+
+  /** The GetRank method */
+  void GetRank(GetRankTask *task, RunContext &rctx) {
+  }
+  void MonitorGetRank(MonitorModeId mode, GetRankTask *task, RunContext &rctx) {
+    switch (mode) {
+      case MonitorMode::kReplicaAgg: {
+        std::vector<FullPtr<Task>> &replicas = *rctx.replicas_;
+      }
+    }
+  }

@@ -2,123 +2,75 @@
 // Created by lukemartinlogan on 8/11/23.
 //
 
-#ifndef HRUN_TASKS_TASK_TEMPL_INCLUDE_rankConsensus_rankConsensus_TASKS_H_
-#define HRUN_TASKS_TASK_TEMPL_INCLUDE_rankConsensus_rankConsensus_TASKS_H_
+#ifndef CHI_TASKS_TASK_TEMPL_INCLUDE_rankConsensus_rankConsensus_TASKS_H_
+#define CHI_TASKS_TASK_TEMPL_INCLUDE_rankConsensus_rankConsensus_TASKS_H_
 
-#include "CHI_ADMIN/CHI_ADMIN.h"
-#include "hrun/api/hrun_client.h"
-#include "hrun/queue_manager/queue_manager_client.h"
-#include "hrun/task_registry/task_lib.h"
-#include "proc_queue/proc_queue.h"
+#include "chimaera/chimaera_namespace.h"
 
-namespace hrun::rankConsensus {
+namespace chi::rankConsensus {
 
-#include "hrun/hrun_namespace.h"
 #include "rankConsensus_methods.h"
-
-using hrun::proc_queue::PushTask;
-using hrun::proc_queue::TypedPushTask;
+CHI_NAMESPACE_INIT
 
 /**
  * A task to create rankConsensus
  * */
-using hrun::Admin::CreateTaskStateTask;
-struct ConstructTask : public CreateTaskStateTask {
-  /** SHM default constructor */
-  HSHM_ALWAYS_INLINE explicit ConstructTask(hipc::Allocator *alloc)
-      : CreateTaskStateTask(alloc) {}
+struct CreateTaskParams {
+  CLS_CONST char *lib_name_ = "rankConsensus";
 
-  /** Emplace constructor */
-  HSHM_ALWAYS_INLINE explicit ConstructTask(
-      hipc::Allocator *alloc, const TaskNode &task_node,
-      const DomainQuery &domain_id, const std::string &state_name,
-      const TaskStateId &id, const std::vector<PriorityInfo> &queue_info)
-      : CreateTaskStateTask(alloc, task_node, domain_id, state_name,
-                            "rankConsensus", id, queue_info) {
-    // Custom params
-  }
+  HSHM_INLINE_CROSS_FUN
+  CreateTaskParams() = default;
 
-  HSHM_ALWAYS_INLINE
-  ~ConstructTask() {
-    // Custom params
-  }
+  HSHM_INLINE_CROSS_FUN
+  CreateTaskParams(const hipc::CtxAllocator<CHI_ALLOC_T> &alloc) {}
+
+  template <typename Ar>
+  HSHM_INLINE_CROSS_FUN void serialize(Ar &ar) {}
 };
+typedef chi::Admin::CreatePoolBaseTask<CreateTaskParams> CreateTask;
 
 /** A task to destroy rankConsensus */
-using hrun::Admin::DestroyTaskStateTask;
-struct DestructTask : public DestroyTaskStateTask {
+typedef chi::Admin::DestroyContainerTask DestroyTask;
+
+/** The GetRankTask task */
+struct GetRankTask : public Task, TaskFlags<TF_SRL_SYM> {
+  OUT int rank_;
+
   /** SHM default constructor */
-  HSHM_ALWAYS_INLINE explicit DestructTask(hipc::Allocator *alloc)
-      : DestroyTaskStateTask(alloc) {}
-
-  /** Emplace constructor */
-  HSHM_ALWAYS_INLINE explicit DestructTask(hipc::Allocator *alloc,
-                                           const TaskNode &task_node,
-                                           const DomainQuery &domain_id,
-                                           TaskStateId &state_id)
-      : DestroyTaskStateTask(alloc, task_node, domain_id, state_id) {}
-
-  /** Create group */
-  HSHM_ALWAYS_INLINE
-  u32 GetGroup(hshm::charbuf &group) { return TASK_UNORDERED; }
-};
-
-/**
- * A custom task in rankConsensus
- * */
-struct GetRankTask : public Task, TaskFlags<TF_LOCAL> {
-  OUT uint rank_;
-  /** SHM default constructor */
-  HSHM_ALWAYS_INLINE explicit GetRankTask(hipc::Allocator *alloc)
+  HSHM_INLINE explicit GetRankTask(const hipc::CtxAllocator<CHI_ALLOC_T> &alloc)
       : Task(alloc) {}
 
   /** Emplace constructor */
-  HSHM_ALWAYS_INLINE explicit GetRankTask(hipc::Allocator *alloc,
-                                          const TaskNode &task_node,
-                                          const DomainQuery &domain_id,
-                                          const TaskStateId &state_id)
+  HSHM_INLINE explicit GetRankTask(const hipc::CtxAllocator<CHI_ALLOC_T> &alloc,
+                                   const TaskNode &task_node,
+                                   const PoolId &pool_id,
+                                   const DomainQuery &dom_query)
       : Task(alloc) {
     // Initialize task
     task_node_ = task_node;
-    lane_hash_ = 0;
-    prio_ = TaskPrio::kLowLatency;
-    task_state_ = state_id;
+    prio_ = TaskPrioOpt::kLowLatency;
+    pool_ = pool_id;
     method_ = Method::kGetRank;
     task_flags_.SetBits(0);
-    domain_id_ = domain_id;
+    dom_query_ = dom_query;
 
-    // Custom params
-  }
-
-  /** (De)serialize message call */
-  template <typename Ar>
-  void SerializeStart(Ar &ar) {
-    task_serialize<Ar>(ar);
-  }
-
-  /** (De)serialize message return */
-  template <typename Ar>
-  void SerializeEnd(u32 replica, Ar &ar) {
-    ar(rank_);
+    // Custom
   }
 
   /** Duplicate message */
-  void Dup(hipc::Allocator *alloc, GetRankTask &other) { task_dup(other); }
+  void CopyStart(const GetRankTask &other, bool deep) { rank_ = other.rank_; }
 
-  /** Process duplicate message output */
-  void DupEnd(u32 replica, GetRankTask &dup_task) {}
+  /** (De)serialize message call */
+  template <typename Ar>
+  void SerializeStart(Ar &ar) {}
 
-  /** Begin replication */
-  void ReplicateStart(u32 count) {}
-
-  /** Finalize replication */
-  void ReplicateEnd() {}
-
-  /** Create group */
-  HSHM_ALWAYS_INLINE
-  u32 GetGroup(hshm::charbuf &group) { return TASK_UNORDERED; }
+  /** (De)serialize message return */
+  template <typename Ar>
+  void SerializeEnd(Ar &ar) {
+    ar & rank_;
+  }
 };
 
-}  // namespace hrun::rankConsensus
+}  // namespace chi::rankConsensus
 
-#endif  // HRUN_TASKS_TASK_TEMPL_INCLUDE_rankConsensus_rankConsensus_TASKS_H_
+#endif  // CHI_TASKS_TASK_TEMPL_INCLUDE_rankConsensus_rankConsensus_TASKS_H_

@@ -12,41 +12,56 @@
 
 #include "rankConsensus/rankConsensus.h"
 
-#include "CHI_ADMIN/CHI_ADMIN.h"
-#include "hrun/api/hrun_runtime.h"
+#include "chimaera/api/chimaera_runtime.h"
+#include "chimaera/monitor/monitor.h"
+#include "chimaera_admin/chimaera_admin.h"
 
+namespace chi::rankConsensus {
 
-namespace hrun::rankConsensus {
+class Server : public Module {
+ public:
+  CLS_CONST LaneGroupId kDefaultGroup = 0;
+  std::atomic<uint> rank_count;
 
-class Server : public TaskLib {
  public:
   Server() = default;
-  std::atomic<uint> rank_count;
+
   /** Construct rankConsensus */
-  void Construct(ConstructTask *task, RunContext &rctx) {
+  void Create(CreateTask *task, RunContext &rctx) {
     rank_count = 0;
-    task->SetModuleComplete();
+
+    // Create a set of lanes for holding tasks
+    CreateLaneGroup(kDefaultGroup, 1, QUEUE_LOW_LATENCY);
   }
-  void MonitorConstruct(u32 mode, ConstructTask *task, RunContext &rctx) {}
+  void MonitorCreate(MonitorModeId mode, CreateTask *task, RunContext &rctx) {}
+
+  /** Route a task to a lane */
+  Lane *MapTaskToLane(const Task *task) override {
+    // Route tasks to lanes based on their properties
+    // E.g., a strongly consistent filesystem could map tasks to a lane
+    // by the hash of an absolute filename path.
+    return GetLaneByHash(kDefaultGroup, task->prio_, 0);
+  }
 
   /** Destroy rankConsensus */
-  void Destruct(DestructTask *task, RunContext &rctx) {
-    task->SetModuleComplete();
+  void Destroy(DestroyTask *task, RunContext &rctx) {}
+  void MonitorDestroy(MonitorModeId mode, DestroyTask *task, RunContext &rctx) {
   }
-  void MonitorDestruct(u32 mode, DestructTask *task, RunContext &rctx) {}
 
-  /** A custom method */
-  void GetRank(GetRankTask *task, RunContext &rctx) {
-    task->rank_ = rank_count.fetch_add(1);
-    // std::cout << "out " << task->rank_ << std::endl;
-    task->SetModuleComplete();
+  /** The GetRank method */
+  void GetRank(GetRankTask *task, RunContext &rctx) { rank_count.fetch_add(1); }
+  void MonitorGetRank(MonitorModeId mode, GetRankTask *task, RunContext &rctx) {
+    switch (mode) {
+      case MonitorMode::kReplicaAgg: {
+        std::vector<FullPtr<Task>> &replicas = *rctx.replicas_;
+      }
+    }
   }
-  void MonitorGetRank(u32 mode, GetRankTask *task, RunContext &rctx) {}
 
  public:
 #include "rankConsensus/rankConsensus_lib_exec.h"
 };
 
-}  // namespace hrun::rankConsensus
+}  // namespace chi::rankConsensus
 
-HRUN_TASK_CC(hrun::rankConsensus::Server, "rankConsensus");
+CHI_TASK_CC(chi::rankConsensus::Server, "rankConsensus");

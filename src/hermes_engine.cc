@@ -112,8 +112,9 @@ void HermesEngine::Init_() {
   if (rank == 0) std::cout << "Connected to Hermes" << std::endl;
 
   // add rank with consensus
-  rank_consensus.Create(DomainQuery::GetLocalHash(0), "rankConsensus");
-  rank = rank_consensus.GetRank(DomainQuery::GetLocalHash(0));
+  rank_consensus.Create(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0),
+                        chi::DomainQuery::GetLocalHash(0), "rankConsensus");
+  rank = rank_consensus.GetRank(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0));
   const size_t bufferSize = 1024;  // Define the buffer size
   char buffer[bufferSize];         // Create a buffer to hold the hostname
   // Get the hostname
@@ -169,7 +170,9 @@ void HermesEngine::Init_() {
   if (params.find("db_file") != params.end()) {
     db_file = params["db_file"];
     db = new SQLiteWrapper(db_file);
-    client.Create(DomainQuery::GetGlobal(), "db_operation", db_file);
+    client.Create(HSHM_MCTX, chi::DomainQuery::GetGlobalBcast(),
+                  chi::DomainQuery::GetGlobalBcast(), "db_operation",
+                  chi::CreateContext(), db_file);
     if (rank % ppn == 0) {
       db->createTables();
     }
@@ -333,7 +336,8 @@ void HermesEngine::EndStep() {
   //  if (m_OpenMode == adios2::Mode::Write) {
   //    if (rank % ppn == 0) {
   //      DbOperation db_op(uid, currentStep);
-  //      client.Mdm_insert(DomainQuery::GetLocalHash(0), db_op);
+  //      client.Mdm_insert(HSHM_MCTX,
+  //      chi::DomainQuery::GetLocalHash(0), db_op);
   //    }
   //  }
   delete Hermes->bkt;
@@ -514,7 +518,7 @@ void HermesEngine::DoPutSync_(const adios2::core::Variable<T> &variable,
   BlobInfo blobInfo(Hermes->bkt->name, name);
   DbOperation db_op(currentStep, rank, std::move(vm), name,
                     std::move(blobInfo));
-  client.Mdm_insert(DomainQuery::GetLocalHash(0), db_op);
+  client.Mdm_insert(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0), db_op);
 }
 
 template <typename T>
@@ -534,7 +538,7 @@ void HermesEngine::DoPutDeferred_(const adios2::core::Variable<T> &variable,
   BlobInfo blobInfo(Hermes->bkt->name, name);
   DbOperation db_op(currentStep, rank, std::move(vm), name,
                     std::move(blobInfo));
-  client.Mdm_insert(DomainQuery::GetLocalHash(0), db_op);
+  client.Mdm_insert(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0), db_op);
 }
 
 template <typename T>
@@ -547,7 +551,7 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
   }
   Hermes->bkt->Put(name, total_count * sizeof(T), values);
   DbOperation db_op = generateMetadata(variable, (float *)values, total_count);
-  client.Mdm_insert(DomainQuery::GetLocalHash(0), db_op);
+  client.Mdm_insert(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0), db_op);
   // switch the bucket
   int current_bucket = stoi(adiosOutput);
   if (current_bucket > 2) {

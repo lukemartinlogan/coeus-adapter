@@ -1,19 +1,15 @@
-#ifndef HRUN_COEUS_MDM_LIB_EXEC_H_
-#define HRUN_COEUS_MDM_LIB_EXEC_H_
+#ifndef CHI_COEUS_MDM_LIB_EXEC_H_
+#define CHI_COEUS_MDM_LIB_EXEC_H_
 
-void MonitorConstruct(u32 mode, ConstructTask *task, RunContext &rctx) {}
-void MonitorDestruct(u32 mode, DestructTask *task, RunContext &rctx) {}
-void MonitorMdm_insert(u32 mode, Mdm_insertTask *task, RunContext &rctx) {}
-void MonitorMdm_insert(u32 mode, DestructTask *task, RunContext &rctx) {}
 /** Execute a task */
 void Run(u32 method, Task *task, RunContext &rctx) override {
   switch (method) {
-    case Method::kConstruct: {
-      Construct(reinterpret_cast<ConstructTask *>(task), rctx);
+    case Method::kCreate: {
+      Create(reinterpret_cast<CreateTask *>(task), rctx);
       break;
     }
-    case Method::kDestruct: {
-      Destruct(reinterpret_cast<DestructTask *>(task), rctx);
+    case Method::kDestroy: {
+      Destroy(reinterpret_cast<DestroyTask *>(task), rctx);
       break;
     }
     case Method::kMdm_insert: {
@@ -23,14 +19,15 @@ void Run(u32 method, Task *task, RunContext &rctx) override {
   }
 }
 /** Execute a task */
-void Monitor(u32 mode, Task *task, RunContext &rctx) override {
-  switch (task->method_) {
-    case Method::kConstruct: {
-      MonitorConstruct(mode, reinterpret_cast<ConstructTask *>(task), rctx);
+void Monitor(MonitorModeId mode, MethodId method, Task *task,
+             RunContext &rctx) override {
+  switch (method) {
+    case Method::kCreate: {
+      MonitorCreate(mode, reinterpret_cast<CreateTask *>(task), rctx);
       break;
     }
-    case Method::kDestruct: {
-      MonitorDestruct(mode, reinterpret_cast<DestructTask *>(task), rctx);
+    case Method::kDestroy: {
+      MonitorDestroy(mode, reinterpret_cast<DestroyTask *>(task), rctx);
       break;
     }
     case Method::kMdm_insert: {
@@ -40,179 +37,142 @@ void Monitor(u32 mode, Task *task, RunContext &rctx) override {
   }
 }
 /** Delete a task */
-void Del(u32 method, Task *task) override {
+void Del(const hipc::MemContext &mctx, u32 method, Task *task) override {
   switch (method) {
-    case Method::kConstruct: {
-      HRUN_CLIENT->DelTask<ConstructTask>(reinterpret_cast<ConstructTask *>(task));
+    case Method::kCreate: {
+      CHI_CLIENT->DelTask<CreateTask>(mctx,
+                                      reinterpret_cast<CreateTask *>(task));
       break;
     }
-    case Method::kDestruct: {
-      HRUN_CLIENT->DelTask<DestructTask>(reinterpret_cast<DestructTask *>(task));
+    case Method::kDestroy: {
+      CHI_CLIENT->DelTask<DestroyTask>(mctx,
+                                       reinterpret_cast<DestroyTask *>(task));
       break;
     }
     case Method::kMdm_insert: {
-      HRUN_CLIENT->DelTask<Mdm_insertTask>(reinterpret_cast<Mdm_insertTask *>(task));
+      CHI_CLIENT->DelTask<Mdm_insertTask>(
+          mctx, reinterpret_cast<Mdm_insertTask *>(task));
       break;
     }
   }
 }
 /** Duplicate a task */
-void Dup(u32 method, Task *orig_task, std::vector<LPointer<Task>> &dups) override {
+void CopyStart(u32 method, const Task *orig_task, Task *dup_task,
+               bool deep) override {
   switch (method) {
-    case Method::kConstruct: {
-      hrun::CALL_DUPLICATE(reinterpret_cast<ConstructTask*>(orig_task), dups);
+    case Method::kCreate: {
+      chi::CALL_COPY_START(reinterpret_cast<const CreateTask *>(orig_task),
+                           reinterpret_cast<CreateTask *>(dup_task), deep);
       break;
     }
-    case Method::kDestruct: {
-      hrun::CALL_DUPLICATE(reinterpret_cast<DestructTask*>(orig_task), dups);
+    case Method::kDestroy: {
+      chi::CALL_COPY_START(reinterpret_cast<const DestroyTask *>(orig_task),
+                           reinterpret_cast<DestroyTask *>(dup_task), deep);
       break;
     }
     case Method::kMdm_insert: {
-      hrun::CALL_DUPLICATE(reinterpret_cast<Mdm_insertTask*>(orig_task), dups);
+      chi::CALL_COPY_START(reinterpret_cast<const Mdm_insertTask *>(orig_task),
+                           reinterpret_cast<Mdm_insertTask *>(dup_task), deep);
       break;
     }
   }
 }
-/** Register the duplicate output with the origin task */
-void DupEnd(u32 method, u32 replica, Task *orig_task, Task *dup_task) override {
+/** Duplicate a task */
+void NewCopyStart(u32 method, const Task *orig_task, FullPtr<Task> &dup_task,
+                  bool deep) override {
   switch (method) {
-    case Method::kConstruct: {
-      hrun::CALL_DUPLICATE_END(replica, reinterpret_cast<ConstructTask*>(orig_task), reinterpret_cast<ConstructTask*>(dup_task));
+    case Method::kCreate: {
+      chi::CALL_NEW_COPY_START(reinterpret_cast<const CreateTask *>(orig_task),
+                               dup_task, deep);
       break;
     }
-    case Method::kDestruct: {
-      hrun::CALL_DUPLICATE_END(replica, reinterpret_cast<DestructTask*>(orig_task), reinterpret_cast<DestructTask*>(dup_task));
+    case Method::kDestroy: {
+      chi::CALL_NEW_COPY_START(reinterpret_cast<const DestroyTask *>(orig_task),
+                               dup_task, deep);
       break;
     }
     case Method::kMdm_insert: {
-      hrun::CALL_DUPLICATE_END(replica, reinterpret_cast<Mdm_insertTask*>(orig_task), reinterpret_cast<Mdm_insertTask*>(dup_task));
-      break;
-    }
-  }
-}
-/** Ensure there is space to store replicated outputs */
-void ReplicateStart(u32 method, u32 count, Task *task) override {
-  switch (method) {
-    case Method::kConstruct: {
-      hrun::CALL_REPLICA_START(count, reinterpret_cast<ConstructTask*>(task));
-      break;
-    }
-    case Method::kDestruct: {
-      hrun::CALL_REPLICA_START(count, reinterpret_cast<DestructTask*>(task));
-      break;
-    }
-    case Method::kMdm_insert: {
-      hrun::CALL_REPLICA_START(count, reinterpret_cast<Mdm_insertTask*>(task));
-      break;
-    }
-  }
-}
-/** Determine success and handle failures */
-void ReplicateEnd(u32 method, Task *task) override {
-  switch (method) {
-    case Method::kConstruct: {
-      hrun::CALL_REPLICA_END(reinterpret_cast<ConstructTask*>(task));
-      break;
-    }
-    case Method::kDestruct: {
-      hrun::CALL_REPLICA_END(reinterpret_cast<DestructTask*>(task));
-      break;
-    }
-    case Method::kMdm_insert: {
-      hrun::CALL_REPLICA_END(reinterpret_cast<Mdm_insertTask*>(task));
+      chi::CALL_NEW_COPY_START(
+          reinterpret_cast<const Mdm_insertTask *>(orig_task), dup_task, deep);
       break;
     }
   }
 }
 /** Serialize a task when initially pushing into remote */
-std::vector<DataTransfer> SaveStart(u32 method, BinaryOutputArchive<true> &ar, Task *task) override {
+void SaveStart(u32 method, BinaryOutputArchive<true> &ar, Task *task) override {
   switch (method) {
-    case Method::kConstruct: {
-      ar << *reinterpret_cast<ConstructTask*>(task);
+    case Method::kCreate: {
+      ar << *reinterpret_cast<CreateTask *>(task);
       break;
     }
-    case Method::kDestruct: {
-      ar << *reinterpret_cast<DestructTask*>(task);
+    case Method::kDestroy: {
+      ar << *reinterpret_cast<DestroyTask *>(task);
       break;
     }
     case Method::kMdm_insert: {
-      ar << *reinterpret_cast<Mdm_insertTask*>(task);
+      ar << *reinterpret_cast<Mdm_insertTask *>(task);
       break;
     }
   }
-  return ar.Get();
 }
 /** Deserialize a task when popping from remote queue */
 TaskPointer LoadStart(u32 method, BinaryInputArchive<true> &ar) override {
   TaskPointer task_ptr;
   switch (method) {
-    case Method::kConstruct: {
-      task_ptr.ptr_ = HRUN_CLIENT->NewEmptyTask<ConstructTask>(task_ptr.shm_);
-      ar >> *reinterpret_cast<ConstructTask*>(task_ptr.ptr_);
+    case Method::kCreate: {
+      task_ptr.ptr_ =
+          CHI_CLIENT->NewEmptyTask<CreateTask>(HSHM_MCTX, task_ptr.shm_);
+      ar >> *reinterpret_cast<CreateTask *>(task_ptr.ptr_);
       break;
     }
-    case Method::kDestruct: {
-      task_ptr.ptr_ = HRUN_CLIENT->NewEmptyTask<DestructTask>(task_ptr.shm_);
-      ar >> *reinterpret_cast<DestructTask*>(task_ptr.ptr_);
+    case Method::kDestroy: {
+      task_ptr.ptr_ =
+          CHI_CLIENT->NewEmptyTask<DestroyTask>(HSHM_MCTX, task_ptr.shm_);
+      ar >> *reinterpret_cast<DestroyTask *>(task_ptr.ptr_);
       break;
     }
     case Method::kMdm_insert: {
-      task_ptr.ptr_ = HRUN_CLIENT->NewEmptyTask<Mdm_insertTask>(task_ptr.shm_);
-      ar >> *reinterpret_cast<Mdm_insertTask*>(task_ptr.ptr_);
+      task_ptr.ptr_ =
+          CHI_CLIENT->NewEmptyTask<Mdm_insertTask>(HSHM_MCTX, task_ptr.shm_);
+      ar >> *reinterpret_cast<Mdm_insertTask *>(task_ptr.ptr_);
       break;
     }
   }
   return task_ptr;
 }
 /** Serialize a task when returning from remote queue */
-std::vector<DataTransfer> SaveEnd(u32 method, BinaryOutputArchive<false> &ar, Task *task) override {
+void SaveEnd(u32 method, BinaryOutputArchive<false> &ar, Task *task) override {
   switch (method) {
-    case Method::kConstruct: {
-      ar << *reinterpret_cast<ConstructTask*>(task);
+    case Method::kCreate: {
+      ar << *reinterpret_cast<CreateTask *>(task);
       break;
     }
-    case Method::kDestruct: {
-      ar << *reinterpret_cast<DestructTask*>(task);
+    case Method::kDestroy: {
+      ar << *reinterpret_cast<DestroyTask *>(task);
       break;
     }
     case Method::kMdm_insert: {
-      ar << *reinterpret_cast<Mdm_insertTask*>(task);
-      break;
-    }
-  }
-  return ar.Get();
-}
-/** Deserialize a task when returning from remote queue */
-void LoadEnd(u32 replica, u32 method, BinaryInputArchive<false> &ar, Task *task) override {
-  switch (method) {
-    case Method::kConstruct: {
-      ar.Deserialize(replica, *reinterpret_cast<ConstructTask*>(task));
-      break;
-    }
-    case Method::kDestruct: {
-      ar.Deserialize(replica, *reinterpret_cast<DestructTask*>(task));
-      break;
-    }
-    case Method::kMdm_insert: {
-      ar.Deserialize(replica, *reinterpret_cast<Mdm_insertTask*>(task));
+      ar << *reinterpret_cast<Mdm_insertTask *>(task);
       break;
     }
   }
 }
-/** Get the grouping of the task */
-u32 GetGroup(u32 method, Task *task, hshm::charbuf &group) override {
+/** Deserialize a task when popping from remote queue */
+void LoadEnd(u32 method, BinaryInputArchive<false> &ar, Task *task) override {
   switch (method) {
-    case Method::kConstruct: {
-      return reinterpret_cast<ConstructTask*>(task)->GetGroup(group);
+    case Method::kCreate: {
+      ar >> *reinterpret_cast<CreateTask *>(task);
+      break;
     }
-    case Method::kDestruct: {
-      return reinterpret_cast<DestructTask*>(task)->GetGroup(group);
+    case Method::kDestroy: {
+      ar >> *reinterpret_cast<DestroyTask *>(task);
+      break;
     }
     case Method::kMdm_insert: {
-      return reinterpret_cast<Mdm_insertTask*>(task)->GetGroup(group);
+      ar >> *reinterpret_cast<Mdm_insertTask *>(task);
+      break;
     }
   }
-  return -1;
 }
 
-#endif  // HRUN_COEUS_MDM_METHODS_H_
+#endif  // CHI_COEUS_MDM_LIB_EXEC_H_

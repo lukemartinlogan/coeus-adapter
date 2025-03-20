@@ -2,13 +2,24 @@ cmake_minimum_required(VERSION 3.10)
 project(COEUS)
 
 set(CMAKE_CXX_STANDARD 17)
+option(COEUS_ENABLE_CMAKE_DOTENV "Load environment variables from .env.cmake" OFF)
+
+# ------------------------------------------------------------------------------
+# DOTENV
+# ------------------------------------------------------------------------------
+if(COEUS_ENABLE_CMAKE_DOTENV)
+    if(EXISTS ${CMAKE_SOURCE_DIR}/.env.cmake)
+        include(.env.cmake)
+    endif()
+endif()
 
 # ------------------------------------------------------------------------------
 # Global variable
 # ------------------------------------------------------------------------------
 set(COEUS_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
-MESSAGE(STATUS "CMAKE_PREFIX_PATH: $ENV{CMAKE_PREFIX_PATH}")
-MESSAGE(STATUS "MODULEPATH: $ENV{MODULEPATH}")
+
+# MESSAGE(STATUS "CMAKE_PREFIX_PATH: $ENV{CMAKE_PREFIX_PATH}")
+# MESSAGE(STATUS "MODULEPATH: $ENV{MODULEPATH}")
 
 # ------------------------------------------------------------------------------
 # Solving some weirdness with CLion docker toolchain
@@ -16,7 +27,6 @@ MESSAGE(STATUS "MODULEPATH: $ENV{MODULEPATH}")
 if(EXISTS "/.dockerenv")
     # Inside a Docker container
     file(GLOB ADIOS2_INCLUDE_DIR "/opt/software/linux-ubuntu22.04-zen2/gcc-11.3.0/adios2-*/include")
-    file(GLOB Hermes_INCLUDE_DIRS "/opt/software/linux-ubuntu22.04-zen2/gcc-11.3.0/hermes-master-*/include")
 else()
     # Not inside a Docker container
     set(ADIOS2_INCLUDE_DIR "")
@@ -30,8 +40,8 @@ MESSAGE(STATUS "Hermes_INCLUDE_DIR: " ${Hermes_INCLUDE_DIR})
 # Targets built within this project are exported at Install time for use
 # by other projects.
 # -----------------------------------------------------------------------------
-if(NOT COEUS_EXPORTED_TARGETS)
-    set(COEUS_EXPORTED_TARGETS "coeus-targets")
+if(NOT CHIMAERA_EXPORTED_TARGETS)
+    set(CHIMAERA_EXPORTED_TARGETS "coeus-targets")
 endif()
 
 # ------------------------------------------------------------------------------
@@ -90,8 +100,13 @@ endif()
 # ------------------------------------------------------------------------------
 # External libraries
 # ------------------------------------------------------------------------------
-# This is for compatability with SPACK
+# This is for compatability with CLANG + Spack
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+list(APPEND CMAKE_INSTALL_RPATH "${COEUS_INSTALL_LIB_DIR}")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+include_directories(include)
 
 # Hermes
 find_package(Hermes CONFIG REQUIRED)
@@ -126,7 +141,6 @@ include_directories(${SQLite3_INCLUDE_DIRS})
 
 # spdlog
 add_subdirectory(external_libraries/spdlog)
-add_subdirectory(external_libraries/cereal)
 add_subdirectory(external_libraries/rapidjson)
 
 # Gtest

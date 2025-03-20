@@ -10,69 +10,54 @@
  * have access to the file, you may request a copy from help@hdfgroup.org.   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HRUN_rankConsensus_H_
-#define HRUN_rankConsensus_H_
+#ifndef CHI_rankConsensus_H_
+#define CHI_rankConsensus_H_
 
 #include "rankConsensus_tasks.h"
 
-namespace hrun::rankConsensus {
+namespace chi::rankConsensus {
 
 /** Create rankConsensus requests */
-class Client : public TaskLibClient {
+class Client : public ModuleClient {
  public:
   /** Default constructor */
+  HSHM_INLINE_CROSS_FUN
   Client() = default;
 
   /** Destructor */
+  HSHM_INLINE_CROSS_FUN
   ~Client() = default;
 
-  /** Async create a task state */
-  HSHM_ALWAYS_INLINE
-  LPointer<ConstructTask> AsyncCreate(const TaskNode &task_node,
-                                      const DomainQuery &domain_id,
-                                      const std::string &state_name) {
-    id_ = TaskStateId::GetNull();
-    QueueManagerInfo &qm = HRUN_CLIENT->server_config_.queue_manager_;
-    std::vector<PriorityInfo> queue_info;
-    return CHI_ADMIN->AsyncCreateTaskState<ConstructTask>(
-        task_node, domain_id, state_name, id_, queue_info);
-  }
-  HRUN_TASK_NODE_ROOT(AsyncCreate)
-  template <typename... Args>
-  HSHM_ALWAYS_INLINE void Create(Args &&...args) {
-    LPointer<ConstructTask> task = AsyncCreate(std::forward<Args>(args)...);
-
+  /** Create a pool */
+  HSHM_INLINE_CROSS_FUN
+  void Create(const hipc::MemContext &mctx, const DomainQuery &dom_query,
+              const DomainQuery &affinity, const chi::string &pool_name,
+              const CreateContext &ctx = CreateContext()) {
+    FullPtr<CreateTask> task =
+        AsyncCreate(mctx, dom_query, affinity, pool_name, ctx);
     task->Wait();
-    Init(task->id_, CHI_ADMIN->queue_id_);
-    HRUN_CLIENT->DelTask(task);
+    Init(task->ctx_.id_);
+    CHI_CLIENT->DelTask(mctx, task);
+  }
+  CHI_TASK_METHODS(Create);
+
+  /** Destroy pool + queue */
+  HSHM_INLINE_CROSS_FUN
+  void Destroy(const hipc::MemContext &mctx, const DomainQuery &dom_query) {
+    CHI_ADMIN->DestroyContainer(mctx, dom_query, id_);
   }
 
-  /** Destroy task state + queue */
-  HSHM_ALWAYS_INLINE
-  void Destroy(const DomainQuery &domain_id) {
-    CHI_ADMIN->DestroyTaskState(domain_id, id_);
+  /** GetRank task */
+  int GetRank(const hipc::MemContext &mctx, const DomainQuery &dom_query) {
+    FullPtr<GetRankTask> task = AsyncGetRank(mctx, dom_query);
+    task->Wait();
+    int rank = task->rank_;
+    CHI_CLIENT->DelTask(mctx, task);
+    return rank;
   }
-
-  /** Call a custom method */
-  HSHM_ALWAYS_INLINE
-  void AsyncGetRankConstruct(GetRankTask *task, const TaskNode &task_node,
-                             const DomainQuery &domain_id) {
-    HRUN_CLIENT->ConstructTask<GetRankTask>(task, task_node, domain_id, id_);
-  }
-  HSHM_ALWAYS_INLINE
-  uint GetRank(const DomainQuery &domain_id) {
-    LPointer<hrunpq::TypedPushTask<GetRankTask>> get_task =
-        AsyncGetRank(domain_id);
-    get_task->Wait();
-
-    GetRankTask *task = get_task->get();
-    uint choosen_rank = task->rank_;
-    HRUN_CLIENT->DelTask(get_task);
-    return choosen_rank;
-  }
-  HRUN_TASK_NODE_PUSH_ROOT(GetRank);
+  CHI_TASK_METHODS(GetRank);
 };
 
-}  // namespace hrun::rankConsensus
+}  // namespace chi::rankConsensus
 
-#endif  // HRUN_rankConsensus_H_
+#endif  // CHI_rankConsensus_H_
