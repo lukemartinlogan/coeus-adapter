@@ -1,14 +1,15 @@
 # ------------------------------------------------------------------------------
 # Set variables
 # ------------------------------------------------------------------------------
-set(MOD_EXPORTS ${MOD_NAMESPACE}_coeus_mdm_exports)
+set(MOD_EXPORTS ${REPO_NAMESPACE}_coeus_mdm_exports)
 
 # ------------------------------------------------------------------------------
 # Build coeus_mdm Task Library
 # ------------------------------------------------------------------------------
-add_chimod_library(${MOD_NAMESPACE} coeus_mdm coeus_mdm.cc)
+add_chimod_runtime_lib(${REPO_NAMESPACE} coeus_mdm coeus_mdm_runtime.cc)
+add_chimod_client_lib(${REPO_NAMESPACE} coeus_mdm coeus_mdm_client.cc)
 
-foreach(target IN LISTS ${MOD_NAMESPACE}_coeus_mdm_runtime_iter)
+foreach(target IN LISTS ${REPO_NAMESPACE}_coeus_mdm_runtime_iter)
         target_link_libraries(${target} PUBLIC
                 ${SQLite3_LIBRARIES})
         target_include_directories(${target} PRIVATE

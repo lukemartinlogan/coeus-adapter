@@ -4,10 +4,10 @@ target_link_libraries(mpi_test PRIVATE
         GTest::gtest_main
         GTest::gmock_main
         MPI::MPI_CXX
-        hermes::core_client
+        hermes::hermes_core_client
         ${ADIOS2_LIBRARIES}
         spdlog
-        hermes::core_client
+        hermes::hermes_core_client
         rapidjson)
 
 target_include_directories(mpi_test PRIVATE

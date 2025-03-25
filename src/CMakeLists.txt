@@ -21,7 +21,7 @@ target_include_directories(hermes_engine PUBLIC
   ${CMAKE_SOURCE_DIR}/tasks/rankConsensus/include
 )
 target_link_libraries(hermes_engine LINK_PUBLIC
-  hermes::core_client
+  hermes::hermes_core_client
   ${ADIOS2_LIBRARIES}
   spdlog
   rapidjson

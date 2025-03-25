@@ -10,7 +10,7 @@ target_include_directories(hermes_mocks INTERFACE
 target_link_libraries(hermes_mocks INTERFACE
         GTest::gtest_main
         GTest::gmock_main
-        hermes::core_client)
+        hermes::hermes_core_client)
 
 add_library(mpi_mocks INTERFACE
         MockMPI.h)

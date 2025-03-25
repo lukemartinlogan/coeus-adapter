@@ -1,12 +1,13 @@
 # ------------------------------------------------------------------------------
 # Set variables
 # ------------------------------------------------------------------------------
-set(MOD_EXPORTS ${MOD_NAMESPACE}_rankConsensus_exports)
+set(MOD_EXPORTS ${REPO_NAMESPACE}_rankConsensus_exports)
 
 # ------------------------------------------------------------------------------
 # Build rankConsensus Task Library
 # ------------------------------------------------------------------------------
-add_chimod_library(${MOD_NAMESPACE} rankConsensus rankConsensus.cc)
+add_chimod_runtime_lib(${REPO_NAMESPACE} rankConsensus rankConsensus_runtime.cc)
+add_chimod_client_lib(${REPO_NAMESPACE} rankConsensus rankConsensus_client.cc)
 
 # ------------------------------------------------------------------------------
 # Install rankConsensus Task Library

@@ -8,10 +8,10 @@ target_link_libraries(sqlite_base_test
         GTest::gtest_main
         GTest::gmock_main
         ${SQLite3_LIBRARIES}
-        hermes::core_client
+        hermes::hermes_core_client
         ${ADIOS2_LIBRARIES}
         spdlog
-        hermes::core_client
+        hermes::hermes_core_client
         rapidjson)
 
 # gtest_discover_tests(sqlite_base_test)

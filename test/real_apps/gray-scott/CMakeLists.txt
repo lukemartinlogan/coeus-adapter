@@ -17,7 +17,7 @@ add_executable(adios2-gray-scott
 )
 
 target_link_libraries(adios2-gray-scott adios2::adios2
-        hermes_engine hermes_engine hermes::core_client MPI::MPI_C)
+        hermes_engine hermes_engine hermes::hermes_core_client MPI::MPI_C)
 target_include_directories(adios2-gray-scott PRIVATE
         ${ADIOS2_INCLUDE_DIR}
 )
@@ -27,7 +27,7 @@ install(TARGETS adios2-gray-scott
 add_executable(adios2-pdf-calc analysis/pdf-calc.cpp)
 
 target_link_libraries(adios2-pdf-calc
-        adios2::adios2 hermes_engine hermes::core_client MPI::MPI_C)
+        adios2::adios2 hermes_engine hermes::hermes_core_client MPI::MPI_C)
 target_include_directories(adios2-pdf-calc PRIVATE
         ${ADIOS2_INCLUDE_DIR}
 )
@@ -58,7 +58,7 @@ add_executable(hashing-comparison analysis/compare.cpp)
 target_link_libraries(hashing-comparison
         adios2::adios2
         hermes_engine
-        hermes::core_client
+        hermes::hermes_core_client
         MPI::MPI_C
 )
 

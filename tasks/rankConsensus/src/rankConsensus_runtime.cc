@@ -9,25 +9,26 @@
  * the COPYING file, which can be found at the top directory. If you do not  *
  * have access to the file, you may request a copy from help@hdfgroup.org.   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-#include "coeus_mdm/coeus_mdm.h"
+
+#include "rankConsensus/rankConsensus_client.h"
 
 #include "chimaera/api/chimaera_runtime.h"
 #include "chimaera/monitor/monitor.h"
-#include "chimaera_admin/chimaera_admin.h"
-#include "common/SQlite.h"
 
-namespace chi::coeus_mdm {
+namespace chi::rankConsensus {
 
 class Server : public Module {
  public:
-  std::unique_ptr<SQLiteWrapper> db;
   CLS_CONST LaneGroupId kDefaultGroup = 0;
+  std::atomic<uint> rank_count;
 
  public:
   Server() = default;
 
-  /** Construct coeus_mdm */
+  /** Construct rankConsensus */
   void Create(CreateTask *task, RunContext &rctx) {
+    rank_count = 0;
+
     // Create a set of lanes for holding tasks
     CreateLaneGroup(kDefaultGroup, 1, QUEUE_LOW_LATENCY);
   }
@@ -41,42 +42,14 @@ class Server : public Module {
     return GetLaneByHash(kDefaultGroup, task->prio_, 0);
   }
 
-  /** Destroy coeus_mdm */
+  /** Destroy rankConsensus */
   void Destroy(DestroyTask *task, RunContext &rctx) {}
   void MonitorDestroy(MonitorModeId mode, DestroyTask *task, RunContext &rctx) {
   }
 
-  /** The Mdm_insert method */
-  void Mdm_insert(Mdm_insertTask *task, RunContext &rctx) {
-    DbOperation db_op = task->GetDbOp();
-
-    if (db_op.type == OperationType::InsertData) {
-      db->InsertVariableMetadata(db_op.step, db_op.rank, db_op.metadata);
-      db->InsertBlobLocation(db_op.step, db_op.rank, db_op.name,
-                             db_op.blobInfo);
-
-    } else if (db_op.type == OperationType::UpdateSteps) {
-      db->UpdateTotalSteps(db_op.uid, db_op.currentStep);
-
-    } else if (db_op.type == OperationType::InsertDerivedData) {
-      db->InsertVariableMetadata(db_op.step, db_op.rank, db_op.metadata);
-      db->InsertBlobLocation(db_op.step, db_op.rank, db_op.name,
-                             db_op.blobInfo);
-      db->insertOrUpdateDerivedQuantity(
-          db_op.step, db_op.name, "min", db_op.blobInfo.blob_name,
-          db_op.blobInfo.bucket_name, db_op.derived_semantics.min_value);
-      db->insertOrUpdateDerivedQuantity(
-          db_op.step, db_op.name, "max", db_op.blobInfo.blob_name,
-          db_op.blobInfo.bucket_name, db_op.derived_semantics.max_value);
-    }
-    // int step, const std::string& variable,
-    //                                      const std::string& operation, const
-    //                                      std::string& blob_name, const
-    //                                      std::string& bucket_name, float
-    //                                      value
-  }
-  void MonitorMdm_insert(MonitorModeId mode, Mdm_insertTask *task,
-                         RunContext &rctx) {
+  /** The GetRank method */
+  void GetRank(GetRankTask *task, RunContext &rctx) { rank_count.fetch_add(1); }
+  void MonitorGetRank(MonitorModeId mode, GetRankTask *task, RunContext &rctx) {
     switch (mode) {
       case MonitorMode::kReplicaAgg: {
         std::vector<FullPtr<Task>> &replicas = *rctx.replicas_;
@@ -85,9 +58,9 @@ class Server : public Module {
   }
 
  public:
-#include "coeus_mdm/coeus_mdm_lib_exec.h"
+#include "rankConsensus/rankConsensus_lib_exec.h"
 };
 
-}  // namespace chi::coeus_mdm
+}  // namespace chi::rankConsensus
 
-CHI_TASK_CC(chi::coeus_mdm::Server, "coeus_mdm");
+CHI_TASK_CC(chi::rankConsensus::Server, "rankConsensus");

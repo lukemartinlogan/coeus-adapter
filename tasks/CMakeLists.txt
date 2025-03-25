@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.25)
 project(coeus)
-set(MOD_NAMESPACE coeus)
+set(REPO_NAMESPACE coeus)
 
 # FIND CHIMAERA
 if(NOT CHIMAERA_IS_MAIN_PROJECT)
