@@ -8,7 +8,7 @@
 #include <random>
 #include <stdexcept> // runtime_error
 #include <vector>
-
+#include "../../gray-scott/common/timer.hpp"
 GrayScott::GrayScott(const Settings &settings, MPI_Comm comm)
 : settings(settings), comm(comm), rand_dev(), mt_gen(rand_dev()),
   uniform_dist(-1.0, 1.0)

@@ -154,23 +154,6 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 # ------------------------------------------------------------------------------
-# Code Coverage
-# ------------------------------------------------------------------------------
-if(COEUS_ENABLE_COVERAGE)
-    set(COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage" CACHE STRING
-        "Flags to the coverage program to perform coverage inspection")
-    mark_as_advanced(COVERAGE_FLAGS)
-
-    macro(set_coverage_flags target)
-        set_target_properties(${target}
-            PROPERTIES
-            COMPILE_FLAGS ${COVERAGE_FLAGS}
-            LINK_FLAGS ${COVERAGE_FLAGS}
-        )
-    endmacro()
-endif()
-
-# ------------------------------------------------------------------------------
 # Enable Testing
 # ------------------------------------------------------------------------------
 function(pytest test_type test_name)
@@ -194,23 +177,6 @@ function(pytest_benchmark test_type test_name label)
 endfunction()
 
 # ------------------------------------------------------------------------------
-# Documentation
-# ------------------------------------------------------------------------------
-if(COEUS_ENABLE_DOXYGEN)
-    include(UseDoxygenDoc)
-    add_doxygen_doc(
-        BUILD_DIR
-        ${CMAKE_CURRENT_BINARY_DIR}/_build
-        DOXY_FILE
-        ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in
-        TARGET_NAME
-        dox
-        COMMENT
-        "HTML documentation"
-    )
-endif()
-
-# ------------------------------------------------------------------------------
 # Build COEUS
 # ------------------------------------------------------------------------------
 add_subdirectory(tasks)
@@ -227,8 +193,6 @@ endif()
 
 add_subdirectory(src)
 
-# add_custom_target(lint ALL COMMAND bash ${COEUS_ROOT}/CI/lint.sh ${COEUS_ROOT})
-
 # ------------------------------------------------------------------------------
 # Build tests + benchmarks
 # ------------------------------------------------------------------------------
@@ -242,13 +206,9 @@ function(jarvis_test test_type test_name)
         COMMAND jarvis pipeline run yaml "${JARVIS_PIPELINES}/${test_type}/${test_name}.yaml")
 endfunction()
 
-# add_custom_target(
-# jarvis_repo
-# COMMAND jarvis repo add
-# )
 add_subdirectory(test)
 
 # ------------------------------------------------------------------------------
 # Install COEUS
 # ------------------------------------------------------------------------------
-# install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX})

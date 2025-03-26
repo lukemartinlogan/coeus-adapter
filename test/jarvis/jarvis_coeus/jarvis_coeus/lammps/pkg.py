@@ -4,6 +4,7 @@ Lammps is ....
 """
 from jarvis_cd.basic.pkg import Application
 from jarvis_util import *
+import os
 
 
 class Lammps(Application):
@@ -67,16 +68,22 @@ class Lammps(Application):
         :param kwargs: Configuration parameters for this pkg.
         :return: None
         """
-       if self.config['engine'].lower() == 'bp4':
-          self.copy_template_file(f'{self.pkg_dir}/config/adios2.xml',
-                                  f'{self.config["script_location"]}/adios_config.xml')
-       elif  self.config['engine'].lower == 'hermes':
-           replacement = [("ppn", self.config['ppn']), ("DB_FIEL", self.config['db_file'])]
-           self.copy_template_file(f'{self.pkg_dir}/config/hermes.xml',
-                                   f'{self.config["script_location"]}/adios_config.xml', replacement)
-       else:
+        self.config['full_script_location'] = os.path.expandvars(self.config['script_location'])
+        if not os.path.exists(self.config['full_script_location']):
+             self.config['full_script_location'] = os.path.join(self.pkg_dir, 'lammps-input-files/inputs', self.config['script_location'])
+        if not os.path.exists(self.config['full_script_location']):
+             self.log(f'Could not find the script: {self.config["script_location"]}', Color.RED)
+             exit(1)
+        if self.config['engine'].lower() == 'bp4':
+            self.copy_template_file(f'{self.pkg_dir}/config/adios2.xml',
+                                  f'{self.config["full_script_location"]}/adios_config.xml')
+        elif self.config['engine'].lower() == 'hermes':
+            replacement = [("ppn", self.config['ppn']), ("DB_FILE", self.config['db_path'])]
+            self.copy_template_file(f'{self.pkg_dir}/config/hermes.xml',
+                                   f'{self.config["full_script_location"]}/adios_config.xml', replacement)
+        else:
+           self.log(f'Engine not defined: {self.config["engine"]}', Color.RED)
            raise Exception('Engine not defined')
-       self.update_config(kwargs, rebuild=False)
 
     def start(self):
         """
@@ -90,7 +97,7 @@ class Lammps(Application):
                          ppn=self.config['ppn'],
                          hostfile=self.jarvis.hostfile,
                          env=self.mod_env,
-                         cwd=self.config['script_location']))
+                         cwd=self.config['full_script_location']))
         pass
 
     def stop(self):

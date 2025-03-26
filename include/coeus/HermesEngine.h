@@ -37,6 +37,7 @@
 #include "coeus_mdm/coeus_mdm_client.h"
 #include "common/DbOperation.h"
 #include "common/SQlite.h"
+#include "common/Timer.h"
 #include "common/Tracer.h"
 #include "common/VariableMetadata.h"
 #include "common/YAMLParser.h"
@@ -44,7 +45,6 @@
 #include "rankConsensus/rankConsensus_client.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
-
 namespace coeus {
 
 class HermesEngine : public adios2::plugin::PluginEngineInterface {

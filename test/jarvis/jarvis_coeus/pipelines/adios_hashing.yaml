@@ -1,0 +1,40 @@
+name: case1_fixed_step
+env: coeus
+pkgs:
+  - pkg_type: adios2_gray_scott
+    pkg_name: adios2_gray_scott1
+    plotgap: 1 
+    out_file: /home/llogan/hermes_test/out1.bp
+    ppn: 20
+    nprocs: 1
+    steps: 2
+    L: 128
+  - pkg_type: adios_hashing
+    pkg_name: adios_hashing1
+    ppn: 20 
+    nprocs: 1 
+    in_filename: /home/llogan/hermes_test/out1.bp
+    out_filename: /home/llogan/hermes_test/copy1.bp
+  - pkg_type: adios2_gray_scott
+    pkg_name: adios2_gray_scott2
+    plotgap: 1 
+    out_file: /home/llogan/hermes_test/out2.bp
+    ppn: 20
+    nprocs: 1
+    steps: 2
+    L: 128
+  - pkg_type: adios_hashing
+    pkg_name: adios_hashing2
+    ppn: 20 
+    nprocs: 1 
+    in_filename: /home/llogan/hermes_test/out2.bp
+    out_filename: /home/llogan/hermes_test/copy2.bp
+  - pkg_type: hashing_compare 
+    pkg_name: hashing_compare 
+    ppn: 20 
+    nprocs: 1
+    in_filename: /home/llogan/hermes_test/out1.bp
+    out_filename: /home/llogan/hermes_test/out2.bp
+
+  
+  

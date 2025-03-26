@@ -3,23 +3,37 @@
 ## software installation
 1. install kokkos:
 ```
-  git clone -b develop  https://github.com/kokkos/kokkos.git
-  cd kokkos
-  mkdir build
-  cmake ../ -D CMAKE_INSTALL_PREFIX=/mnt/common/hxu40/install2  -D Kokkos_ENABLE_SERIAL=ON -D CMAKE_CXX_STANDARD=17 -D CMAKE_POSITION_INDEPENDENT_CODE=TRUE -D BUILD_SHARED_LIBS=ON -D 
-  Kokkos_ENABLE_THREAD=ON
-  make -j8
-  make install
-
+scspkg create kokkos
+cd $(scspkg pkg root kokkos)
+git clone -b develop  https://github.com/kokkos/kokkos.git
+cd kokkos
+mkdir build
+cmake ../ \
+  -D CMAKE_INSTALL_PREFIX=$(scspkg pkg root kokkos)  \
+  -D Kokkos_ENABLE_SERIAL=ON  \
+  -D CMAKE_CXX_STANDARD=17  \
+  -D CMAKE_POSITION_INDEPENDENT_CODE=TRUE  \
+  -D BUILD_SHARED_LIBS=ON  \
+  -D Kokkos_ENABLE_THREAD=ON
+make -j8
+make install
 ```
 
 
 2. install state-diff
-  ```
- mkdir build
-  cmake ../ -D CMAKE_BUILD_TYPE=RelWithDebInfo  -D CMAKE_INSTALL_PREFIX=/mnt/common/hxu40/install2 -D Kokkos_ROOT=/mnt/common/hxu40/install2 -D CMAKE_POSITION_INDEPENDENT_CODE=TRUE -D BUILD_SHARED_LIBS=ON
-  make -j8
-  make install
+```
+scspkg create coeus_state_diff
+cd $(scspkg pkg src coeus_state_diff)
+mkdir build
+cd build
+cmake ../ \
+-D CMAKE_BUILD_TYPE=RelWithDebInfo  \
+-D CMAKE_INSTALL_PREFIX=$(scspkg pkg root coeus_state_diff) \
+-D Kokkos_ROOT=$(scspkg pkg root kokkos) \
+-D CMAKE_POSITION_INDEPENDENT_CODE=TRUE \
+-D BUILD_SHARED_LIBS=ON
+make -j8
+make install
   ```
 
 
@@ -55,7 +69,7 @@ mkdir build
 cd build
 cmake ../ -D ADIOS2_USE_Kokkos=ON  -D CMAKE_INSTALL_PREFIX=/mnt/common/hxu40/install2 -D StateDiff_ROOT=/mnt/common/hxu40/install2 -D ADIOS2_USE_Derived_Variable=ON -D ADIOS2_USE_SST=OFF -D CMAKE_POSITION_INDEPENDENT_CODE=TRUE -D BUILD_SHARED_LIBS=ON -D BUILD_TESTING=ON
 make -j8
-make isntall
+make install
  ```
 
 4. install coeus-adapter

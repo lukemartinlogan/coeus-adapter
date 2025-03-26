@@ -15,7 +15,6 @@ foreach(target IN LISTS ${REPO_NAMESPACE}_coeus_mdm_runtime_iter)
         target_include_directories(${target} PRIVATE
                 ${PROJECT_SOURCE_DIR}/include
                 ${SQLite3_INCLUDE_DIRS})
-        message("target: ${target}")
 endforeach()
 
 # ------------------------------------------------------------------------------

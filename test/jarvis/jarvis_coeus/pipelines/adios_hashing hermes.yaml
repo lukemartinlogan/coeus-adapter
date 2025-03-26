@@ -1,0 +1,23 @@
+name: case1_fixed_step
+env: coeus
+pkgs:
+  - pkg_type: chimaera_run
+    pkg_name: chimaera_run
+    sleep: 5
+    do_dbg: false
+    dbg_port: 4000
+    port: 6000
+    modules: ['hermes_hermes_core']
+  - pkg_type: hermes_run
+    pkg_name: hermes_run
+  - pkg_type: adios2_gray_scott 
+    pkg_name: adios2_gray_scott1
+    plotgap: 1 
+    L: 128
+    steps: 40 
+    out_file: /home/llogan/test_hermes/out1.bp 
+    nprocs: 1
+    ppn: 20 
+    checkpoint_output: /home/llogan/test_hermes/ckpt.bp
+    engine: hermes_derived 
+    db_path: benchmark_metadata.db

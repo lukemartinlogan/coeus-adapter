@@ -1,9 +1,11 @@
-#ifndef __TIMER_HPP__
-#define __TIMER_HPP__
-
+//
+// Created by Hua on 2/4/2025.
+//
 #include <iostream>
 #include <chrono>
 #include <string>
+#ifndef COEUS_ADAPTER_TIMER_H
+#define COEUS_ADAPTER_TIMER_H
 class Timer {
 public:
     explicit Timer(const std::string& timer_name, bool start_now = false)
@@ -59,4 +61,4 @@ private:
     bool running;
 };
 
-#endif
+#endif //COEUS_ADAPTER_TIMER_H

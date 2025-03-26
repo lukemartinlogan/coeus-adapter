@@ -13,7 +13,7 @@
 #include <utility>
 #include <type_traits>
 #include <filesystem>
-
+#include "common/Timer.h"
 #include "common/MetadataStructs.h"
 
 class SQLiteWrapper {
@@ -147,6 +147,7 @@ class SQLiteWrapper {
   }
 
     bool FindVariable(int step, int mpi_rank, const std::string& varName, const std::string& bucketName) {
+        Timer coeus_inquire_metadata_hashing("coeus_inquire_metadata_hashing", true);
         sqlite3_stmt* stmt;
         const std::string findVariable = "SELECT COUNT(*) FROM BlobLocations WHERE step = ? AND mpi_rank = ? AND name = ? AND bucket_name = ?;";
         sqlite3_prepare_v2(db, findVariable.c_str(), -1, &stmt, 0);
@@ -162,6 +163,7 @@ class SQLiteWrapper {
         }
 
         sqlite3_finalize(stmt);
+        coeus_inquire_metadata_hashing.print_csv();
         return exists;
     }
 

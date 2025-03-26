@@ -4,3 +4,6 @@
 [submodule "CI/jarvis-cd"]
 	path = CI/jarvis-cd
 	url = https://github.com/scs-lab/jarvis-cd.git
+[submodule "test/jarvis/jarvis_coeus/jarvis_coeus/lammps/lammps-input-files"]
+	path = test/jarvis/jarvis_coeus/jarvis_coeus/lammps/lammps-input-files
+	url = https://github.com/simongravelle/lammps-input-files.git

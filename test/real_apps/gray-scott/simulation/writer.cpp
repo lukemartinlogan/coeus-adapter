@@ -1,5 +1,5 @@
 #include "../../gray-scott/simulation/writer.h"
-
+#include "../../gray-scott/common/timer.hpp"
 std::string concatenateVectorToString(const std::vector<size_t>& vec) {
   std::stringstream ss;
   ss << "( ";
@@ -84,30 +84,33 @@ Writer::Writer(const Settings &settings, const GrayScott &sim, adios2::IO io, bo
 
     io.DefineAttribute<std::string>("Fides_Variable_Associations", assocList.data(), assocList.size());
 
-
+    Timer gs_DefineVariable("gs_DefineVariable_u" , true);
     var_u =
         io.DefineVariable<double>("U", {settings.L, settings.L, settings.L},
                                   {sim.offset_z, sim.offset_y, sim.offset_x},
                                   {sim.size_z, sim.size_y, sim.size_x});
-
+    gs_DefineVariable.print_csv();
+    Timer gs_DefineVariable_v("gs_DefineVariable_v" , true);
     var_v =
         io.DefineVariable<double>("V", {settings.L, settings.L, settings.L},
                                   {sim.offset_z, sim.offset_y, sim.offset_x},
                                   {sim.size_z, sim.size_y, sim.size_x});
-
+    gs_DefineVariable_v.print_csv();
 
     if(derived == 1) {
         std::cout << "use derived variables" << std::endl;
+        Timer gs_DefineDerivedVariable("gs_DefineDerivedVariable_derive/hashU", true);
         auto PDFU = io.DefineDerivedVariable("derive/hashU",
                                              "x = U \n"
                                              "hash(x)",
                                              adios2::DerivedVarType::StoreData);
-
+        gs_DefineDerivedVariable.print_csv();
+        Timer gs_DefineDerivedVariable_v("gs_DefineDerivedVariable_derive/hashV" , true);
         auto PDFV = io.DefineDerivedVariable("derive/hashV",
                                              "x = V \n"
                                              "hash(x)",
                                              adios2::DerivedVarType::StoreData);
-
+        gs_DefineDerivedVariable_v.print_csv();
     }
 
 
@@ -197,12 +200,32 @@ void Writer::write(int step, const GrayScott &sim, int rank)
 //          << " Shape Var V " << concatenateVectorToString(var_v.Shape())
 //         <<std::endl;
 //        }
-
+        Timer gs_beginStep("gs_beginStep", true);
         writer.BeginStep();
-        writer.Put<int>(var_step, &step);
-        writer.Put<double>(var_u, u.data());
-        writer.Put<double>(var_v, v.data());
+        gs_beginStep.print_csv();
+        Timer gs_put_steps("gs_put_steps", true);
+
+        //writer.Put<int>(var_step, &step);
+        writer.Put<int>(var_step, &step, adios2::Mode::Sync);
+        writer.Flush();
+        gs_put_steps.print_csv();
+        Timer gs_put_variables_u("gs_put_variables_u", true);
+
+        //writer.Put<double>(var_u, u.data());
+        writer.Put<double>(var_u, u.data(), adios2::Mode::Sync);
+        writer.Flush();
+        gs_put_variables_u.print_csv();
+        Timer gs_put_variables_v("gs_put_variables_v", true);
+
+
+        //writer.Put<double>(var_v, v.data());
+        writer.Put<double>(var_v, v.data(), adios2::Mode::Sync);
+
+        writer.Flush();
+        gs_put_variables_v.print_csv();
+        Timer gs_endstep("gs_endstep", true);
         writer.EndStep();
+        gs_endstep.print_csv();
     }
 }
 

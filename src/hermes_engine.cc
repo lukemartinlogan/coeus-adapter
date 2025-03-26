@@ -27,6 +27,7 @@ HermesEngine::HermesEngine(adios2::core::IO &io,  // NOLINT
     : adios2::plugin::PluginEngineInterface(io, name, mode, comm.Duplicate()) {
   Hermes = std::make_shared<coeus::Hermes>();
   //  mpiComm = std::make_shared<coeus::MPI>(comm.Duplicate());
+
   Init_();
   engine_logger->info("rank {} with name {} and mode {}", rank, name,
                       adios2::ToString(mode));
@@ -191,16 +192,9 @@ void HermesEngine::Init_() {
 /**
  * Close the Engine.
  * */
-void HermesEngine::DoClose(const int transportIndex) {
-  TRACE_FUNC("engine close");
+void HermesEngine::DoClose(const int transportIndex) { open = false; }
 
-  open = false;
-}
-
-HermesEngine::~HermesEngine() {
-  TRACE_FUNC();
-  delete db;
-}
+HermesEngine::~HermesEngine() { delete db; }
 
 /**
  * Handle step operations.
@@ -450,6 +444,8 @@ void HermesEngine::LoadMetadata() {
 }
 
 void HermesEngine::DefineVariable(const VariableMetadata &variableMetadata) {
+  Timer coeus_define_variables(
+      "coeus_define_variables_" + variableMetadata.name, true);
   if (currentStep != 1) {
     // If the metadata is defined delete current value to update it
     m_IO.RemoveVariable(variableMetadata.name);
@@ -469,6 +465,7 @@ void HermesEngine::DefineVariable(const VariableMetadata &variableMetadata) {
   }
   ADIOS2_FOREACH_STDTYPE_1ARG(DEFINE_VARIABLE)
 #undef DEFINE_VARIABLE
+  coeus_define_variables.print_csv();
 }
 
 template <typename T>
@@ -504,11 +501,14 @@ void HermesEngine::DoGetDeferred_(const adios2::core::Variable<T> &variable,
 template <typename T>
 void HermesEngine::DoPutSync_(const adios2::core::Variable<T> &variable,
                               const T *values) {
-  TRACE_FUNC(variable.m_Name, adios2::ToString(variable.m_Count));
-
+  Timer coeus_DoPutSync_hermes_time(
+      "coeus_DoPutSync_hermes_time" + variable.m_Name, true);
+  std::cout << "Put sync started" << std::endl;
   std::string name = variable.m_Name;
   Hermes->bkt->Put(name, variable.SelectionSize() * sizeof(T), values);
   // database
+  Timer coeus_DoPutSync__metadata_time(
+      "coeus_DoPutSync__metadata_time" + variable.m_Name, true);
   VariableMetadata vm(variable.m_Name, variable.m_Shape, variable.m_Start,
                       variable.m_Count, variable.IsConstantDims(), true,
                       adios2::ToString(variable.m_Type));
@@ -525,6 +525,8 @@ void HermesEngine::DoPutDeferred_(const adios2::core::Variable<T> &variable,
 
   Hermes->bkt->Put(name, variable.SelectionSize() * sizeof(T), values);
   // database
+  Timer coeus_DoPutDeferred_metadata_time(
+      "coeus_DoPutDeferred_metadata_time" + variable.m_Name, true);
   VariableMetadata vm(variable.m_Name, variable.m_Shape, variable.m_Start,
                       variable.m_Count, variable.IsConstantDims(), true,
                       adios2::ToString(variable.m_Type));
