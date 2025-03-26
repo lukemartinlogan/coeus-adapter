@@ -13,7 +13,7 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_INSTALL_PREFIX": "/home/llogan/.scspkg/packages/hermes_run",
+                "CMAKE_INSTALL_PREFIX": "/home/llogan/.scspkg/packages/coeus",
                 "COEUS_ENABLE_CMAKE_DOTENV": "ON"
             }
         }

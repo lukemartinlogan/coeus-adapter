@@ -29,6 +29,7 @@ class Client : public ModuleClient {
   HSHM_INLINE_CROSS_FUN
   ~Client() = default;
 
+  CHI_BEGIN(Create)
   /** Create a pool */
   HSHM_INLINE_CROSS_FUN
   void Create(const hipc::MemContext &mctx, const DomainQuery &dom_query,
@@ -41,13 +42,17 @@ class Client : public ModuleClient {
     CHI_CLIENT->DelTask(mctx, task);
   }
   CHI_TASK_METHODS(Create);
+  CHI_END(Create)
 
+  CHI_BEGIN(Destroy)
   /** Destroy pool + queue */
   HSHM_INLINE_CROSS_FUN
   void Destroy(const hipc::MemContext &mctx, const DomainQuery &dom_query) {
     CHI_ADMIN->DestroyContainer(mctx, dom_query, id_);
   }
+  CHI_END(Destroy)
 
+  CHI_BEGIN(Mdm_insert)
   /** Mdm_insert task */
   void Mdm_insert(const hipc::MemContext &mctx, const DomainQuery &dom_query,
                   const DbOperation &db_op) {
@@ -56,6 +61,9 @@ class Client : public ModuleClient {
     CHI_CLIENT->DelTask(mctx, task);
   }
   CHI_TASK_METHODS(Mdm_insert);
+  CHI_END(Mdm_insert)
+
+  CHI_AUTOGEN_METHODS
 };
 
 }  // namespace chi::coeus_mdm

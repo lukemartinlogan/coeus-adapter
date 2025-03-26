@@ -4,7 +4,7 @@ project(coeus)
 set(REPO_NAMESPACE coeus)
 
 # FIND CHIMAERA
-if(NOT CHIMAERA_IS_MAIN_PROJECT)
+if (NOT CHIMAERA_IS_MAIN_PROJECT)
   find_package(Chimaera CONFIG REQUIRED)
 endif()
 
@@ -25,7 +25,7 @@ if(NOT CHIMAERA_INSTALL_DATA_DIR)
   set(CHIMAERA_INSTALL_DATA_DIR ${CMAKE_INSTALL_PREFIX}/share)
 endif()
 
-if(NOT CHIMAERA_EXPORTED_TARGETS)
+if (NOT CHIMAERA_EXPORTED_TARGETS)
   set(CHIMAERA_EXPORTED_TARGETS Coeus)
 endif()
 
@@ -34,10 +34,8 @@ add_subdirectory(coeus_mdm)
 add_subdirectory(rankConsensus)
 
 # INSTALL TARGETS
-if(NOT CHIMAERA_IS_MAIN_PROJECT)
-  # install(EXPORT ${CHIMAERA_EXPORTED_TARGETS}
-  # FILE ${CHIMAERA_EXPORTED_TARGETS}Config.cmake
-  # NAMESPACE coeus::
-  # DESTINATION cmake
-  # )
-endif()
+install(EXPORT ${CHIMAERA_EXPORTED_TARGETS}
+        FILE ${CHIMAERA_EXPORTED_TARGETS}Config.cmake
+        NAMESPACE coeus::
+        DESTINATION cmake
+)

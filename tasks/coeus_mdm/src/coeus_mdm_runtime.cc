@@ -25,12 +25,14 @@ class Server : public Module {
  public:
   Server() = default;
 
+  CHI_BEGIN(Create)
   /** Construct coeus_mdm */
   void Create(CreateTask *task, RunContext &rctx) {
     // Create a set of lanes for holding tasks
     CreateLaneGroup(kDefaultGroup, 1, QUEUE_LOW_LATENCY);
   }
   void MonitorCreate(MonitorModeId mode, CreateTask *task, RunContext &rctx) {}
+  CHI_END(Create)
 
   /** Route a task to a lane */
   Lane *MapTaskToLane(const Task *task) override {
@@ -40,11 +42,14 @@ class Server : public Module {
     return GetLaneByHash(kDefaultGroup, task->prio_, 0);
   }
 
+  CHI_BEGIN(Destroy)
   /** Destroy coeus_mdm */
   void Destroy(DestroyTask *task, RunContext &rctx) {}
   void MonitorDestroy(MonitorModeId mode, DestroyTask *task, RunContext &rctx) {
   }
+  CHI_END(Destroy)
 
+  CHI_BEGIN(Mdm_insert)
   /** The Mdm_insert method */
   void Mdm_insert(Mdm_insertTask *task, RunContext &rctx) {
     DbOperation db_op = task->GetDbOp();
@@ -82,7 +87,9 @@ class Server : public Module {
       }
     }
   }
+  CHI_END(Mdm_insert)
 
+  CHI_AUTOGEN_METHODS
  public:
 #include "coeus_mdm/coeus_mdm_lib_exec.h"
 };

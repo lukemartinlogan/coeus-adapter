@@ -1,0 +1,3 @@
+kCreate: {'val': 0, 'compiled': True}
+kDestroy: {'val': 1, 'compiled': True}
+kMdm_insert: {'val': 10, 'compiled': True}

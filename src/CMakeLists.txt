@@ -9,24 +9,24 @@ set(HERMES_ENGINE_SRCS
 # ------------------------------------------------------------------------------
 # Libraries
 # ------------------------------------------------------------------------------
-add_library(hermes_engine ${HERMES_ENGINE_SRCS} ../include/coeus/MetadataSerializer.h)
+add_library(hermes_engine ${HERMES_ENGINE_SRCS})
 add_dependencies(hermes_engine spdlog)
 add_dependencies(hermes_engine coeus_mdm)
 add_dependencies(hermes_engine rankConsensus)
 target_include_directories(hermes_engine PUBLIC
-  ../include
   ${ADIOS2_INCLUDE_DIR}
   ${SQLite3_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/tasks/coeus_mdm/include
-  ${CMAKE_SOURCE_DIR}/tasks/rankConsensus/include
 )
+
 target_link_libraries(hermes_engine LINK_PUBLIC
   hermes::hermes_core_client
   ${ADIOS2_LIBRARIES}
   spdlog
   rapidjson
   ${SQLite3_LIBRARIES}
-  coeus_mdm)
+  coeus::coeus_mdm_client
+  coeus::rankConsensus_client
+)
 
 # -----------------------------------------------------------------------------
 # Add Target(s) to CMake Install
@@ -34,6 +34,8 @@ target_link_libraries(hermes_engine LINK_PUBLIC
 install(
   TARGETS
   hermes_engine
+  spdlog
+  rapidjson
   EXPORT
   ${CHIMAERA_EXPORTED_TARGETS}
   LIBRARY DESTINATION ${COEUS_INSTALL_LIB_DIR}
@@ -53,18 +55,6 @@ install(
 # FILE
 # ${CHIMAERA_EXPORTED_TARGETS}.cmake
 # )
-
-# -----------------------------------------------------------------------------
-# Export all exported targets to the build tree for use by parent project
-# -----------------------------------------------------------------------------
-if(NOT COEUS_EXTERNALLY_CONFIGURED)
-  EXPORT(
-    TARGETS
-    ${COEUS_EXPORTED_LIBS}
-    FILE
-    ${CHIMAERA_EXPORTED_TARGETS}.cmake
-  )
-endif()
 
 # ------------------------------------------------------------------------------
 # Set variables for parent scope

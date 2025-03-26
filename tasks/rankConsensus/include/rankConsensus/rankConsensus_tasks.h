@@ -12,11 +12,12 @@ namespace chi::rankConsensus {
 #include "rankConsensus_methods.h"
 CHI_NAMESPACE_INIT
 
+CHI_BEGIN(Create)
 /**
  * A task to create rankConsensus
  * */
 struct CreateTaskParams {
-  CLS_CONST char *lib_name_ = "rankConsensus";
+  CLS_CONST char *lib_name_ = "coeus_rankConsensus";
 
   HSHM_INLINE_CROSS_FUN
   CreateTaskParams() = default;
@@ -28,10 +29,14 @@ struct CreateTaskParams {
   HSHM_INLINE_CROSS_FUN void serialize(Ar &ar) {}
 };
 typedef chi::Admin::CreatePoolBaseTask<CreateTaskParams> CreateTask;
+CHI_END(Create)
 
+CHI_BEGIN(Destroy)
 /** A task to destroy rankConsensus */
 typedef chi::Admin::DestroyContainerTask DestroyTask;
+CHI_END(Destroy)
 
+CHI_BEGIN(GetRank)
 /** The GetRankTask task */
 struct GetRankTask : public Task, TaskFlags<TF_SRL_SYM> {
   OUT int rank_;
@@ -70,7 +75,9 @@ struct GetRankTask : public Task, TaskFlags<TF_SRL_SYM> {
     ar & rank_;
   }
 };
+CHI_END(GetRank)
 
+CHI_AUTOGEN_METHODS
 }  // namespace chi::rankConsensus
 
 #endif  // CHI_TASKS_TASK_TEMPL_INCLUDE_rankConsensus_rankConsensus_TASKS_H_

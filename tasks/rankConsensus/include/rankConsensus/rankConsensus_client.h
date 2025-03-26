@@ -28,6 +28,7 @@ class Client : public ModuleClient {
   HSHM_INLINE_CROSS_FUN
   ~Client() = default;
 
+  CHI_BEGIN(Create)
   /** Create a pool */
   HSHM_INLINE_CROSS_FUN
   void Create(const hipc::MemContext &mctx, const DomainQuery &dom_query,
@@ -40,12 +41,18 @@ class Client : public ModuleClient {
     CHI_CLIENT->DelTask(mctx, task);
   }
   CHI_TASK_METHODS(Create);
+  CHI_END(Create)
 
+  CHI_BEGIN(Destroy)
   /** Destroy pool + queue */
   HSHM_INLINE_CROSS_FUN
   void Destroy(const hipc::MemContext &mctx, const DomainQuery &dom_query) {
-    CHI_ADMIN->DestroyContainer(mctx, dom_query, id_);
+    FullPtr<DestroyTask> task = AsyncDestroy(mctx, dom_query, id_);
+    task->Wait();
+    CHI_CLIENT->DelTask(mctx, task);
   }
+  CHI_TASK_METHODS(Destroy)
+  CHI_END(Destroy)
 
   /** GetRank task */
   int GetRank(const hipc::MemContext &mctx, const DomainQuery &dom_query) {
@@ -56,6 +63,9 @@ class Client : public ModuleClient {
     return rank;
   }
   CHI_TASK_METHODS(GetRank);
+  CHI_END(GetRank)
+
+  CHI_AUTOGEN_METHODS
 };
 
 }  // namespace chi::rankConsensus

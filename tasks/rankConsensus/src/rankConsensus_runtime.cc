@@ -10,10 +10,9 @@
  * have access to the file, you may request a copy from help@hdfgroup.org.   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "rankConsensus/rankConsensus_client.h"
-
 #include "chimaera/api/chimaera_runtime.h"
 #include "chimaera/monitor/monitor.h"
+#include "rankConsensus/rankConsensus_client.h"
 
 namespace chi::rankConsensus {
 
@@ -25,6 +24,7 @@ class Server : public Module {
  public:
   Server() = default;
 
+  CHI_BEGIN(Create)
   /** Construct rankConsensus */
   void Create(CreateTask *task, RunContext &rctx) {
     rank_count = 0;
@@ -33,6 +33,7 @@ class Server : public Module {
     CreateLaneGroup(kDefaultGroup, 1, QUEUE_LOW_LATENCY);
   }
   void MonitorCreate(MonitorModeId mode, CreateTask *task, RunContext &rctx) {}
+  CHI_BEGIN(Create)
 
   /** Route a task to a lane */
   Lane *MapTaskToLane(const Task *task) override {
@@ -42,11 +43,14 @@ class Server : public Module {
     return GetLaneByHash(kDefaultGroup, task->prio_, 0);
   }
 
+  CHI_BEGIN(Destroy)
   /** Destroy rankConsensus */
   void Destroy(DestroyTask *task, RunContext &rctx) {}
   void MonitorDestroy(MonitorModeId mode, DestroyTask *task, RunContext &rctx) {
   }
+  CHI_END(Destroy)
 
+  CHI_BEGIN(GetRank)
   /** The GetRank method */
   void GetRank(GetRankTask *task, RunContext &rctx) { rank_count.fetch_add(1); }
   void MonitorGetRank(MonitorModeId mode, GetRankTask *task, RunContext &rctx) {
@@ -56,7 +60,9 @@ class Server : public Module {
       }
     }
   }
+  CHI_END(GetRank)
 
+  CHI_AUTOGEN_METHODS
  public:
 #include "rankConsensus/rankConsensus_lib_exec.h"
 };

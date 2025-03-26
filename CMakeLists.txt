@@ -33,8 +33,6 @@ else()
 endif()
 
 MESSAGE(STATUS "ADIOS2_INCLUDE_DIR: " ${ADIOS2_INCLUDE_DIR})
-MESSAGE(STATUS "Hermes_INCLUDE_DIRS: " ${Hermes_INCLUDE_DIRS})
-MESSAGE(STATUS "Hermes_INCLUDE_DIR: " ${Hermes_INCLUDE_DIR})
 
 # -----------------------------------------------------------------------------
 # Targets built within this project are exported at Install time for use
