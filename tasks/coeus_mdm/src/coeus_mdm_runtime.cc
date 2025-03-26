@@ -30,6 +30,10 @@ class Server : public Module {
   void Create(CreateTask *task, RunContext &rctx) {
     // Create a set of lanes for holding tasks
     CreateLaneGroup(kDefaultGroup, 1, QUEUE_LOW_LATENCY);
+
+    // Load the paramset
+    CreateTaskParams params = task->GetParams();
+    db = std::make_unique<SQLiteWrapper>(params.db_file_);
   }
   void MonitorCreate(MonitorModeId mode, CreateTask *task, RunContext &rctx) {}
   CHI_END(Create)
