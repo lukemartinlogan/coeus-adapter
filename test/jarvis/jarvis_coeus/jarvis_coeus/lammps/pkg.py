@@ -102,7 +102,6 @@ class Lammps(Application):
 
         :return: None
         """
-        self.log(f'Using the cwd lmp -in {self.input_path}', Color.YELLOW) 
         engine_path = self.find_library('hermes_engine')
         if engine_path is None:
             self.log('Could not find hermes_engine', Color.RED)
@@ -111,7 +110,7 @@ class Lammps(Application):
         self.env['ADIOS2_PLUGIN_PATH'] = '/home/llogan/Documents/Projects/coeus-adapter/build/bin'
         self.log(f'ADIOS2_PLUGIN_PATH: {self.env["ADIOS2_PLUGIN_PATH"]}', Color.YELLOW)
         Exec(f'lmp -in {self.input_path}',
-             LocalExecInfo(nprocs=self.config['nprocs'],
+             MpiExecInfo(nprocs=self.config['nprocs'],
                          ppn=self.config['ppn'],
                          hostfile=self.jarvis.hostfile,
                          env=self.env,
