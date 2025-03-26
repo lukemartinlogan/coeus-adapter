@@ -57,8 +57,6 @@ class Client : public ModuleClient {
   void Mdm_insert(const hipc::MemContext &mctx, const DomainQuery &dom_query,
                   const DbOperation &db_op) {
     FullPtr<Mdm_insertTask> task = AsyncMdm_insert(mctx, dom_query, db_op);
-    task->Wait();
-    CHI_CLIENT->DelTask(mctx, task);
   }
   CHI_TASK_METHODS(Mdm_insert);
   CHI_END(Mdm_insert)
