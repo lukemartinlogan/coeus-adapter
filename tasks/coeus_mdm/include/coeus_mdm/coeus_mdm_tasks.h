@@ -45,25 +45,41 @@ CHI_END(Destroy)
 CHI_BEGIN(Mdm_insert)
 /** The Mdm_insertTask task */
 struct Mdm_insertTask : public Task, TaskFlags<TF_SRL_SYM> {
+  IN hipc::string db_op_;
+
   /** SHM default constructor */
   HSHM_INLINE explicit Mdm_insertTask(
       const hipc::CtxAllocator<CHI_ALLOC_T> &alloc)
-      : Task(alloc) {}
+      : Task(alloc), db_op_(alloc) {}
 
   /** Emplace constructor */
   HSHM_INLINE explicit Mdm_insertTask(
       const hipc::CtxAllocator<CHI_ALLOC_T> &alloc, const TaskNode &task_node,
-      const PoolId &pool_id, const DomainQuery &dom_query)
-      : Task(alloc) {
+      const PoolId &pool_id, const DomainQuery &dom_query,
+      const DbOperation &db_op)
+      : Task(alloc), db_op_(alloc) {
     // Initialize task
     task_node_ = task_node;
     prio_ = TaskPrioOpt::kLowLatency;
     pool_ = pool_id;
     method_ = Method::kMdm_insert;
-    task_flags_.SetBits(0);
+    task_flags_.SetBits(TASK_FIRE_AND_FORGET);
     dom_query_ = dom_query;
 
     // Custom
+    std::stringstream ss;
+    cereal::BinaryOutputArchive ar(ss);
+    ar << db_op;
+    std::string db_op_ser = ss.str();
+    db_op_ = db_op_ser;
+  }
+
+  DbOperation GetDbOp() {
+    DbOperation db_op;
+    std::stringstream ss(db_op_.str());
+    cereal::BinaryInputArchive ar(ss);
+    ar >> db_op;
+    return db_op;
   }
 
   /** Duplicate message */
