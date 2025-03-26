@@ -42,32 +42,3 @@ install(
   ARCHIVE DESTINATION ${COEUS_INSTALL_LIB_DIR}
   RUNTIME DESTINATION ${COEUS_INSTALL_BIN_DIR}
 )
-
-#
-# #-----------------------------------------------------------------------------
-# # Add Target(s) to CMake Install for import into other projects
-# #-----------------------------------------------------------------------------
-# install(
-# EXPORT
-# ${CHIMAERA_EXPORTED_TARGETS}
-# DESTINATION
-# ${COEUS_INSTALL_DATA_DIR}/cmake/COEUS
-# FILE
-# ${CHIMAERA_EXPORTED_TARGETS}.cmake
-# )
-
-# ------------------------------------------------------------------------------
-# Set variables for parent scope
-# ------------------------------------------------------------------------------
-# Used by config.cmake.build.in and Testing
-set(COEUS_INCLUDES_BUILD_TIME
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${COEUS_EXT_INCLUDE_DEPENDENCIES}
-  PARENT_SCOPE)
-
-# Used by config.cmake.install.in
-set(COEUS_INCLUDES_INSTALL_TIME
-  ${COEUS_INSTALL_INCLUDE_DIR}
-  ${COEUS_EXT_INCLUDE_DEPENDENCIES}
-  PARENT_SCOPE)
