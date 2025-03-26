@@ -35,6 +35,19 @@ cmake ../ \
 make -j32 install
 ```
 
+Add adios2 to spack:
+```bash
+nano ~/.spack/packages.yaml
+```
+
+```bash
+packages:
+  adios2:
+    externals:
+    - spec: adios2@2.9.0
+      prefix: /home/llogan/.scspkg/packages/adios2
+```
+
 ## Install
 
 Load dependencies:

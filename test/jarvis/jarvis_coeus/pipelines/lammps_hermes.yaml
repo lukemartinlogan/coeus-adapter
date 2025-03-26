@@ -13,4 +13,4 @@ pkgs:
   - pkg_type: lammps
     pkg_name: lammps
     script_location: 2D-lennard-jones-fluid
-    engine: hermes
+    engine: bp4

@@ -15,7 +15,7 @@ class Lammps(Application):
         """
         Initialize paths
         """
-        pass
+        self.input_path = os.path.join(self.shared_dir, 'input.lammps')
 
     def _configure_menu(self):
         """
@@ -68,19 +68,29 @@ class Lammps(Application):
         :param kwargs: Configuration parameters for this pkg.
         :return: None
         """
+        # Get the complete script location
         self.config['full_script_location'] = os.path.expandvars(self.config['script_location'])
         if not os.path.exists(self.config['full_script_location']):
              self.config['full_script_location'] = os.path.join(self.pkg_dir, 'lammps-input-files/inputs', self.config['script_location'])
         if not os.path.exists(self.config['full_script_location']):
              self.log(f'Could not find the script: {self.config["script_location"]}', Color.RED)
              exit(1)
+        # Change input.lammps to use adios
+        with open(f'{self.config["full_script_location"]}/input.lammps', 'r') as f:
+            lines = f.readlines()
+        for i, line in enumerate(lines):
+            if 'dump' in line and 'atom' in line and 'adios' not in line:
+                lines[i] = line.replace('atom', 'atom/adios')
+        with open(self.input_path, 'w') as f:
+            f.writelines(lines)
+        # Create the adios2_config.xml file
         if self.config['engine'].lower() == 'bp4':
             self.copy_template_file(f'{self.pkg_dir}/config/adios2.xml',
-                                  f'{self.config["full_script_location"]}/adios_config.xml')
+                                  f'{self.config["full_script_location"]}/adios2_config.xml')
         elif self.config['engine'].lower() == 'hermes':
             replacement = [("ppn", self.config['ppn']), ("DB_FILE", self.config['db_path'])]
             self.copy_template_file(f'{self.pkg_dir}/config/hermes.xml',
-                                   f'{self.config["full_script_location"]}/adios_config.xml', replacement)
+                                   f'{self.config["full_script_location"]}/adios2_config.xml', replacement)
         else:
            self.log(f'Engine not defined: {self.config["engine"]}', Color.RED)
            raise Exception('Engine not defined')
@@ -92,12 +102,22 @@ class Lammps(Application):
 
         :return: None
         """
-        Exec('lmp -in input.lammps',
-             MpiExecInfo(nprocs=self.config['nprocs'],
+        self.log(f'Using the cwd lmp -in {self.input_path}', Color.YELLOW) 
+        engine_path = self.find_library('hermes_engine')
+        if engine_path is None:
+            self.log('Could not find hermes_engine', Color.RED)
+            exit(1)
+        self.env['ADIOS2_PLUGIN_PATH'] = os.path.dirname(engine_path)
+        self.env['ADIOS2_PLUGIN_PATH'] = '/home/llogan/Documents/Projects/coeus-adapter/build/bin'
+        self.log(f'ADIOS2_PLUGIN_PATH: {self.env["ADIOS2_PLUGIN_PATH"]}', Color.YELLOW)
+        Exec(f'lmp -in {self.input_path}',
+             LocalExecInfo(nprocs=self.config['nprocs'],
                          ppn=self.config['ppn'],
                          hostfile=self.jarvis.hostfile,
-                         env=self.mod_env,
-                         cwd=self.config['full_script_location']))
+                         env=self.env,
+                         cwd=self.config['full_script_location'],
+                         dbg_port=self.config['dbg_port'],
+                         do_dbg=self.config['do_dbg']))
         pass
 
     def stop(self):
