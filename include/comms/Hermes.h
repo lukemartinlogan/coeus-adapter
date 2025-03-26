@@ -32,10 +32,10 @@ class Hermes : public IHermes {
     TRANSPARENT_HERMES();
     hermes = HERMES;
     CHI_ADMIN->RegisterModule(HSHM_MCTX, chi::DomainQuery::GetGlobalBcast(),
-                              "coeus_mdm");
+                              "coeus_coeus_mdm");
 
     CHI_ADMIN->RegisterModule(HSHM_MCTX, chi::DomainQuery::GetGlobalBcast(),
-                              "rankConsensus");
+                              "coeus_rankConsensus");
     std::cout << "Registered task" << std::endl;
     return hermes->IsInitialized();
   };
