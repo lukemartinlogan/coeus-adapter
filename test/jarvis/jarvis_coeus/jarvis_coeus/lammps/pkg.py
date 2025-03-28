@@ -107,7 +107,7 @@ class Lammps(Application):
             self.log('Could not find hermes_engine', Color.RED)
             exit(1)
         self.env['ADIOS2_PLUGIN_PATH'] = os.path.dirname(engine_path)
-        self.env['ADIOS2_PLUGIN_PATH'] = '/home/llogan/Documents/Projects/coeus-adapter/build/bin'
+        # self.env['ADIOS2_PLUGIN_PATH'] = '/home/llogan/Documents/Projects/coeus-adapter/build/bin'
         self.log(f'ADIOS2_PLUGIN_PATH: {self.env["ADIOS2_PLUGIN_PATH"]}', Color.YELLOW)
         Exec(f'lmp -in {self.input_path}',
              MpiExecInfo(nprocs=self.config['nprocs'],
