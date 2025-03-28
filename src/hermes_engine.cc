@@ -116,13 +116,11 @@ void HermesEngine::Init_() {
 
       // add rank with consensus
       HILOG(kInfo, "Starting to create rank consensus");
-      // rank_consensus.Create(HSHM_MCTX,
-      //                       chi::DomainQuery::GetDirectHash(
-      //                           chi::SubDomainId::kGlobalContainers, 0),
-      //                       chi::DomainQuery::GetGlobalBcast(),
-      //                       "rankConsensus");
-      rank_consensus.Create(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0),
-                            chi::DomainQuery::GetLocalHash(0), "rankConsensus");
+      rank_consensus.Create(HSHM_MCTX,
+                            chi::DomainQuery::GetDirectHash(
+                                chi::SubDomainId::kGlobalContainers, 0),
+                            chi::DomainQuery::GetGlobalBcast(),
+                            "rankConsensus");
       HILOG(kInfo, "Created rank consensus: {}", rank_consensus.id_);
       rank =
           rank_consensus.GetRank(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0));
