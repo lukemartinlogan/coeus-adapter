@@ -94,6 +94,14 @@ class Lammps(Application):
         else:
            self.log(f'Engine not defined: {self.config["engine"]}', Color.RED)
            raise Exception('Engine not defined')
+        # Find the ADIOS2 Plugin path
+        engine_path = self.find_library('hermes_engine')
+        if engine_path is None:
+            self.log('Could not find hermes_engine', Color.RED)
+            exit(1)
+        self.env['ADIOS2_PLUGIN_PATH'] = os.path.dirname(engine_path)
+        # self.env['ADIOS2_PLUGIN_PATH'] = '/home/llogan/Documents/Projects/coeus-adapter/build/bin'
+        self.log(f'ADIOS2_PLUGIN_PATH: {self.env["ADIOS2_PLUGIN_PATH"]}', Color.YELLOW)
 
     def start(self):
         """
@@ -102,13 +110,6 @@ class Lammps(Application):
 
         :return: None
         """
-        engine_path = self.find_library('hermes_engine')
-        if engine_path is None:
-            self.log('Could not find hermes_engine', Color.RED)
-            exit(1)
-        self.env['ADIOS2_PLUGIN_PATH'] = os.path.dirname(engine_path)
-        # self.env['ADIOS2_PLUGIN_PATH'] = '/home/llogan/Documents/Projects/coeus-adapter/build/bin'
-        self.log(f'ADIOS2_PLUGIN_PATH: {self.env["ADIOS2_PLUGIN_PATH"]}', Color.YELLOW)
         Exec(f'lmp -in {self.input_path}',
              MpiExecInfo(nprocs=self.config['nprocs'],
                          ppn=self.config['ppn'],
