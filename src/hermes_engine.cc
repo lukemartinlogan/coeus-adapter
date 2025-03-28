@@ -115,8 +115,10 @@ void HermesEngine::Init_() {
       if (rank == 0) std::cout << "Connected to Hermes" << std::endl;
 
       // add rank with consensus
+      HILOG(kInfo, "Starting to create rank consensus");
       rank_consensus.Create(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0),
                             chi::DomainQuery::GetLocalHash(0), "rankConsensus");
+      HILOG(kInfo, "Created rank consensus");
       rank =
           rank_consensus.GetRank(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0));
       const size_t bufferSize = 1024;  // Define the buffer size
