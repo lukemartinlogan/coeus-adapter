@@ -118,9 +118,10 @@ void HermesEngine::Init_() {
       HILOG(kInfo, "Starting to create rank consensus");
       rank_consensus.Create(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0),
                             chi::DomainQuery::GetLocalHash(0), "rankConsensus");
-      HILOG(kInfo, "Created rank consensus");
+      HILOG(kInfo, "Created rank consensus: {}", rank_consensus.id_);
       rank =
           rank_consensus.GetRank(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0));
+      HILOG(kInfo, "Get rank: {}", rank);
       const size_t bufferSize = 1024;  // Define the buffer size
       char buffer[bufferSize];         // Create a buffer to hold the hostname
       // Get the hostname
