@@ -116,7 +116,9 @@ void HermesEngine::Init_() {
 
       // add rank with consensus
       HILOG(kInfo, "Starting to create rank consensus");
-      rank_consensus.Create(HSHM_MCTX, chi::DomainQuery::GetGlobalBcast(),
+      rank_consensus.Create(HSHM_MCTX,
+                            chi::DomainQuery::GetDirectHash(
+                                chi::SubDomainId::kGlobalContainers, 0),
                             chi::DomainQuery::GetGlobalBcast(),
                             "rankConsensus");
       HILOG(kInfo, "Created rank consensus: {}", rank_consensus.id_);
@@ -178,7 +180,9 @@ void HermesEngine::Init_() {
       if (params.find("db_file") != params.end()) {
         db_file = params["db_file"];
         db = new SQLiteWrapper(db_file);
-        client.Create(HSHM_MCTX, chi::DomainQuery::GetGlobalBcast(),
+        client.Create(HSHM_MCTX,
+                      chi::DomainQuery::GetDirectHash(
+                          chi::SubDomainId::kGlobalContainers, 0),
                       chi::DomainQuery::GetGlobalBcast(), "db_operation",
                       chi::CreateContext(), db_file);
         if (rank % ppn == 0) {
