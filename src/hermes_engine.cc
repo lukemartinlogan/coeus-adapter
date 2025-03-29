@@ -51,6 +51,7 @@ HermesEngine::HermesEngine(std::shared_ptr<coeus::IHermes> h,
  * Initialize the engine.
  * */
 void HermesEngine::Init_() {
+  HSHM_ERROR_HANDLE_START()
   // initiate the trace manager
   std::random_device rd;   // Obtain a random seed
   std::mt19937 gen(rd());  // Mersenne Twister generator
@@ -195,6 +196,7 @@ void HermesEngine::Init_() {
         adiosOutput = params["execution_order"];
       }
       open = true;
+      HSHM_ERROR_HANDLE_END()
 }
 
 /**
@@ -209,6 +211,7 @@ HermesEngine::~HermesEngine() { delete db; }
  * */
 
 bool HermesEngine::Promote(int step) {
+  HSHM_ERROR_HANDLE_START()
   bool success = true;
   if (step < total_steps) {
     auto var_locations = db->getAllBlobs(currentStep + lookahead, rank);
@@ -217,9 +220,11 @@ bool HermesEngine::Promote(int step) {
     }
   }
   return success;
+  HSHM_ERROR_HANDLE_END()
 }
 
 bool HermesEngine::Demote(int step) {
+  HSHM_ERROR_HANDLE_START()
   bool success = true;
   if (step > 0) {
     auto var_locations = db->getAllBlobs(step, rank);
@@ -228,10 +233,12 @@ bool HermesEngine::Demote(int step) {
     }
   }
   return success;
+  HSHM_ERROR_HANDLE_END()
 }
 
 adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
                                            const float timeoutSeconds) {
+  HSHM_ERROR_HANDLE_START()
   IncrementCurrentStep();
   if (m_OpenMode == adios2::Mode::Read) {
     if (total_steps == -1) total_steps = db->GetTotalSteps(uid);
@@ -256,10 +263,12 @@ adios2::StepStatus HermesEngine::BeginStep(adios2::StepMode mode,
   //      }
   //  }
   return adios2::StepStatus::OK;
+  HSHM_ERROR_HANDLE_END()
 }
 
 // derived part
 void HermesEngine::ComputeDerivedVariables() {
+  HSHM_ERROR_HANDLE_START()
   auto const &m_VariablesDerived = m_IO.GetDerivedVariables();
   auto const &m_Variables = m_IO.GetVariables();
   // parse all derived variables
@@ -330,6 +339,7 @@ void HermesEngine::ComputeDerivedVariables() {
       free(std::get<0>(derivedBlock));
     }
   }
+  HSHM_ERROR_HANDLE_END()
 }
 
 void HermesEngine::IncrementCurrentStep() { currentStep++; }
@@ -337,6 +347,7 @@ void HermesEngine::IncrementCurrentStep() { currentStep++; }
 size_t HermesEngine::CurrentStep() const { return currentStep; }
 
 void HermesEngine::EndStep() {
+  HSHM_ERROR_HANDLE_START()
   ComputeDerivedVariables();
   //  if (m_OpenMode == adios2::Mode::Write) {
   //    if (rank % ppn == 0) {
@@ -346,6 +357,7 @@ void HermesEngine::EndStep() {
   //    }
   //  }
   delete Hermes->bkt;
+  HSHM_ERROR_HANDLE_END()
 }
 
 /**
@@ -354,6 +366,7 @@ void HermesEngine::EndStep() {
 bool HermesEngine::VariableMinMax(const adios2::core::VariableBase &Var,
                                   const size_t Step,
                                   adios2::MinMaxStruct &MinMax) {
+  HSHM_ERROR_HANDLE_START()
   // We initialize the min and max values
   MinMax.Init(Var.m_Type);
 
@@ -373,10 +386,12 @@ bool HermesEngine::VariableMinMax(const adios2::core::VariableBase &Var,
   ADIOS2_FOREACH_STDTYPE_1ARG(DEFINE_VARIABLE)
 #undef DEFINE_VARIABLE
   return true;
+  HSHM_ERROR_HANDLE_END()
 }
 
 void HermesEngine::ApplyElementMinMax(adios2::MinMaxStruct &MinMax,
                                       adios2::DataType Type, void *Element) {
+  HSHM_ERROR_HANDLE_START()
   switch (Type) {
     case adios2::DataType::Int8:
       ElementMinMax<int8_t>(MinMax, Element);
@@ -422,16 +437,20 @@ void HermesEngine::ApplyElementMinMax(adios2::MinMaxStruct &MinMax,
        */
       break;
   }
+  HSHM_ERROR_HANDLE_END()
 }
 
 template <typename T>
 T *HermesEngine::SelectUnion(adios2::PrimitiveStdtypeUnion &u) {
+  HSHM_ERROR_HANDLE_START()
   TRACE_FUNC();
   return reinterpret_cast<T *>(&u);
+  HSHM_ERROR_HANDLE_END()
 }
 
 template <typename T>
 void HermesEngine::ElementMinMax(adios2::MinMaxStruct &MinMax, void *element) {
+  HSHM_ERROR_HANDLE_START()
   TRACE_FUNC("MinMax operation");
   T *min = SelectUnion<T>(MinMax.MinUnion);
   T *max = SelectUnion<T>(MinMax.MaxUnion);
@@ -442,16 +461,20 @@ void HermesEngine::ElementMinMax(adios2::MinMaxStruct &MinMax, void *element) {
   if (*value > *max) {
     max = value;
   }
+  HSHM_ERROR_HANDLE_END()
 }
 
 void HermesEngine::LoadMetadata() {
+  HSHM_ERROR_HANDLE_START()
   auto metadata_vector = db->GetAllVariableMetadata(currentStep, rank);
   for (auto &variableMetadata : metadata_vector) {
     DefineVariable(variableMetadata);
   }
+  HSHM_ERROR_HANDLE_END()
 }
 
 void HermesEngine::DefineVariable(const VariableMetadata &variableMetadata) {
+  HSHM_ERROR_HANDLE_START()
   Timer coeus_define_variables(
       "coeus_define_variables_" + variableMetadata.name, true);
   if (currentStep != 1) {
@@ -474,11 +497,13 @@ void HermesEngine::DefineVariable(const VariableMetadata &variableMetadata) {
   ADIOS2_FOREACH_STDTYPE_1ARG(DEFINE_VARIABLE)
 #undef DEFINE_VARIABLE
   coeus_define_variables.print_csv();
+  HSHM_ERROR_HANDLE_END()
 }
 
 template <typename T>
 void HermesEngine::DoGetSync_(const adios2::core::Variable<T> &variable,
                               T *values) {
+  HSHM_ERROR_HANDLE_START()
   TRACE_FUNC(variable.m_Name, adios2::ToString(variable.m_Count));
   auto blob = Hermes->bkt->Get(variable.m_Name);
   std::string name = variable.m_Name;
@@ -491,17 +516,20 @@ void HermesEngine::DoGetSync_(const adios2::core::Variable<T> &variable,
 #endif
   // finish metadata extraction
   memcpy(values, blob.data(), blob.size());
+  HSHM_ERROR_HANDLE_END()
 }
 
 template <typename T>
 void HermesEngine::DoGetDeferred_(const adios2::core::Variable<T> &variable,
                                   T *values) {
+  HSHM_ERROR_HANDLE_START()
   TRACE_FUNC(variable.m_Name, adios2::ToString(variable.m_Count));
   auto blob = Hermes->bkt->Get(variable.m_Name);
   std::string name = variable.m_Name;
 
   // finish metadata extraction
   memcpy(values, blob.data(), blob.size());
+  HSHM_ERROR_HANDLE_END()
 }
 
 //    }
@@ -509,6 +537,7 @@ void HermesEngine::DoGetDeferred_(const adios2::core::Variable<T> &variable,
 template <typename T>
 void HermesEngine::DoPutSync_(const adios2::core::Variable<T> &variable,
                               const T *values) {
+  HSHM_ERROR_HANDLE_START()
   Timer coeus_DoPutSync_hermes_time(
       "coeus_DoPutSync_hermes_time" + variable.m_Name, true);
   std::cout << "Put sync started" << std::endl;
@@ -524,11 +553,13 @@ void HermesEngine::DoPutSync_(const adios2::core::Variable<T> &variable,
   DbOperation db_op(currentStep, rank, std::move(vm), name,
                     std::move(blobInfo));
   client.Mdm_insert(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0), db_op);
+  HSHM_ERROR_HANDLE_END()
 }
 
 template <typename T>
 void HermesEngine::DoPutDeferred_(const adios2::core::Variable<T> &variable,
                                   const T *values) {
+  HSHM_ERROR_HANDLE_START()
   std::string name = variable.m_Name;
 
   Hermes->bkt->Put(name, variable.SelectionSize() * sizeof(T), values);
@@ -542,11 +573,13 @@ void HermesEngine::DoPutDeferred_(const adios2::core::Variable<T> &variable,
   DbOperation db_op(currentStep, rank, std::move(vm), name,
                     std::move(blobInfo));
   client.Mdm_insert(HSHM_MCTX, chi::DomainQuery::GetLocalHash(0), db_op);
+  HSHM_ERROR_HANDLE_END()
 }
 
 template <typename T>
 void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
                               T *values) {
+  HSHM_ERROR_HANDLE_START()
   std::string name = variable.m_Name;
   int total_count = 1;
   for (auto count : variable.m_Count) {
@@ -579,20 +612,24 @@ void HermesEngine::PutDerived(adios2::core::VariableDerived variable,
       }
     }
   }
+  HSHM_ERROR_HANDLE_END()
 }
 
 template <typename T>
 DbOperation HermesEngine::generateMetadata(adios2::core::Variable<T> variable) {
+  HSHM_ERROR_HANDLE_START()
   VariableMetadata vm(variable.m_Name, variable.m_Shape, variable.m_Start,
                       variable.m_Count, variable.IsConstantDims(), true,
                       adios2::ToString(variable.m_Type));
   BlobInfo blobInfo(Hermes->bkt->name, variable.m_Name);
   return DbOperation(currentStep, rank, std::move(vm), variable.m_Name,
                      std::move(blobInfo));
+  HSHM_ERROR_HANDLE_END()
 }
 
 DbOperation HermesEngine::generateMetadata(
     adios2::core::VariableDerived variable, float *values, int total_count) {
+  HSHM_ERROR_HANDLE_START()
   VariableMetadata vm(variable.m_Name, variable.m_Shape, variable.m_Start,
                       variable.m_Count, variable.IsConstantDims(), true,
                       adios2::ToString(variable.m_Type));
@@ -631,6 +668,7 @@ DbOperation HermesEngine::generateMetadata(
   //  std::move(blobInfo), derived_semantics);
   return DbOperation(currentStep, rank, std::move(vm), variable.m_Name,
                      std::move(blobInfo));
+  HSHM_ERROR_HANDLE_END()
 }
 
 }  // namespace coeus
