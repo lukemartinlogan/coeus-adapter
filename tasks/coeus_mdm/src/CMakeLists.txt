@@ -9,13 +9,11 @@ set(MOD_EXPORTS ${REPO_NAMESPACE}_coeus_mdm_exports)
 add_chimod_runtime_lib(${REPO_NAMESPACE} coeus_mdm coeus_mdm_runtime.cc)
 add_chimod_client_lib(${REPO_NAMESPACE} coeus_mdm coeus_mdm_client.cc)
 
-foreach(target IN LISTS ${REPO_NAMESPACE}_coeus_mdm_runtime_iter)
-        target_link_libraries(${target} PUBLIC
+target_link_libraries(${${REPO_NAMESPACE}_coeus_mdm} PUBLIC
                 ${SQLite3_LIBRARIES})
-        target_include_directories(${target} PRIVATE
-                ${PROJECT_SOURCE_DIR}/include
-                ${SQLite3_INCLUDE_DIRS})
-endforeach()
+target_include_directories(${${REPO_NAMESPACE}_coeus_mdm} PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+        ${SQLite3_INCLUDE_DIRS})
 
 # ------------------------------------------------------------------------------
 # Install coeus_mdm Task Library
